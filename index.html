@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102b43">
+  <title>Hakem Ücret Takibi</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172b3a;
+      --muted: #647584;
+      --navy: #102b43;
+      --navy-2: #173c57;
+      --green: #1d805f;
+      --green-soft: #e7f4ee;
+      --line: #dce5e9;
+      --paper: #ffffff;
+      --bg: #f2f6f7;
+      --amber: #fff2d5;
+      --shadow: 0 14px 35px rgba(16, 43, 67, .07);
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --ink: #e4edf1;
+      --muted: #a1b2bd;
+      --navy: #091722;
+      --navy-2: #142d3d;
+      --green: #58bd91;
+      --green-soft: #173a2e;
+      --line: #344752;
+      --paper: #17242e;
+      --bg: #0d171f;
+      --amber: #342d1b;
+      --shadow: 0 14px 35px rgba(0, 0, 0, .19);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    button, input, select { font: inherit; }
+    .topbar { background: var(--navy); color: #fff; }
+    .topbar-inner, main { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    .topbar-inner {
+      min-height: 112px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 22px 0;
+    }
+    .brand { display: flex; align-items: center; gap: 15px; }
+    .brand-mark {
+      width: 48px; height: 48px; display: grid; place-items: center;
+      border-radius: 14px; background: #1d805f; color: white;
+      font-weight: 800; font-size: 22px; letter-spacing: -1px;
+    }
+    h1 { margin: 0; font-size: clamp(21px, 3vw, 29px); line-height: 1.18; letter-spacing: -.5px; }
+    .subtitle { margin: 6px 0 0; color: #bdccd5; font-size: 14px; }
+    .total-box {
+      min-width: 205px; padding: 12px 17px; border: 1px solid rgba(255,255,255,.2);
+      border-radius: 13px; background: rgba(255,255,255,.07); text-align: right;
+    }
+    .total-label { display: block; color: #c7d6de; font-size: 12px; }
+    .total-value { display: block; margin-top: 1px; font-size: 23px; font-weight: 750; letter-spacing: -.4px; }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .theme-toggle {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px;
+      padding: 0 13px; border: 1px solid rgba(255,255,255,.25); border-radius: 10px;
+      background: rgba(255,255,255,.07); color: #fff; cursor: pointer; white-space: nowrap;
+    }
+    .theme-toggle:hover { background: rgba(255,255,255,.14); }
+    .theme-icon { font-size: 17px; line-height: 1; }
+    main { padding: 28px 0 56px; }
+    .form-card, .month-card {
+      background: var(--paper); border: 1px solid #e2e9ec; border-radius: 17px; box-shadow: var(--shadow);
+    }
+    .form-card { padding: 24px; }
+    .section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 19px; }
+    h2 { margin: 0; font-size: 19px; letter-spacing: -.25px; }
+    .section-hint { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+    .fields {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;
+    }
+    .field { min-width: 0; }
+    .field label, .field-label { display: block; margin: 0 0 7px; color: #354c5d; font-size: 13px; font-weight: 650; }
+    input, select {
+      width: 100%; height: 43px; padding: 0 12px; border: 1px solid #cbd7dd; border-radius: 9px;
+      background: #fff; color: var(--ink); outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    input:focus, select:focus { border-color: #2b8b68; box-shadow: 0 0 0 3px rgba(43,139,104,.13); }
+    input:disabled, select:disabled { background: #f1f4f5; color: #85939c; cursor: not-allowed; }
+    .check-wrap {
+      display: flex; align-items: center; gap: 10px; min-height: 43px; padding: 8px 11px;
+      border: 1px solid #e7d7ad; border-radius: 9px; background: var(--amber); color: #614810;
+    }
+    .check-wrap input { accent-color: #9c7316; width: 17px; height: 17px; flex: 0 0 auto; margin: 0; }
+    .check-wrap label { margin: 0; font-size: 13px; font-weight: 650; line-height: 1.25; cursor: pointer; }
+    .hint { min-height: 18px; margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+    .breakdown {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 19px;
+      padding: 14px; border-radius: 12px; background: #f4f8f8;
+    }
+    .break-item { padding: 0 10px; border-right: 1px solid #dfe8e9; }
+    .break-item:first-child { padding-left: 2px; }
+    .break-item:last-child { border: 0; }
+    .break-label { display: block; color: var(--muted); font-size: 12px; }
+    .break-value { display: block; margin-top: 3px; color: var(--ink); font-size: 16px; font-weight: 700; }
+    .break-item.total .break-value { color: var(--green); font-size: 19px; }
+    .form-actions { display: flex; align-items: center; justify-content: flex-end; gap: 9px; margin-top: 17px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px;
+      padding: 0 17px; border: 1px solid transparent; border-radius: 9px; cursor: pointer; font-weight: 700;
+      transition: transform .12s, background .12s, border-color .12s;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--green); color: #fff; }
+    .btn-primary:hover { background: #176c50; }
+    .btn-secondary { background: #fff; border-color: var(--line); color: #3c5261; }
+    .btn-secondary:hover { background: #f4f7f8; }
+    .months-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 15px; margin: 31px 2px 14px; }
+    .months-heading h2 { font-size: 20px; }
+    .match-count { color: var(--muted); font-size: 13px; }
+    .month-list { display: grid; gap: 15px; }
+    .month-card { overflow: hidden; }
+    .month-head {
+      display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 15px 19px;
+      border-bottom: 1px solid #e5ecee; background: #fbfdfd;
+    }
+    .month-title { margin: 0; font-size: 17px; font-weight: 750; }
+    .month-meta { margin-left: 8px; color: var(--muted); font-size: 12px; font-weight: 450; }
+    .month-sum { color: var(--green); font-size: 17px; font-weight: 750; white-space: nowrap; }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 830px; }
+    th { padding: 10px 12px; color: #637582; background: #fff; font-size: 11px; font-weight: 700; text-align: left; white-space: nowrap; }
+    td { padding: 12px; border-top: 1px solid #edf1f2; color: #2c4150; font-size: 13px; vertical-align: middle; }
+    tbody tr:hover { background: #fbfdfc; }
+    th.money, td.money { text-align: right; white-space: nowrap; }
+    td.total-cell { color: var(--green); font-weight: 750; }
+    .date-cell { white-space: nowrap; font-weight: 650; }
+    .role-tag { display: inline-block; padding: 4px 8px; border-radius: 20px; background: #eef4f6; color: #3e5b6e; font-size: 11px; white-space: nowrap; }
+    .second-tag { display: inline-block; margin-top: 4px; color: #8b6713; font-size: 10px; white-space: nowrap; }
+    .edit-btn { min-height: 32px; padding: 0 10px; background: #fff; border: 1px solid #cbd8dd; border-radius: 7px; color: #24475a; cursor: pointer; font-size: 12px; font-weight: 650; }
+    .edit-btn:hover { background: var(--green-soft); border-color: #a8cfbd; }
+    .empty-state { padding: 45px 20px; border: 1px dashed #cbd8dd; border-radius: 14px; color: var(--muted); background: rgba(255,255,255,.65); text-align: center; }
+    .empty-mark { display: grid; place-items: center; width: 43px; height: 43px; margin: 0 auto 12px; border-radius: 13px; background: #e7f1ed; color: var(--green); font-size: 22px; font-weight: 700; }
+    .empty-state strong { display: block; margin-bottom: 3px; color: #30495a; font-size: 15px; }
+    .toast { position: fixed; right: 22px; bottom: 22px; z-index: 2; padding: 12px 16px; border-radius: 10px; background: var(--navy); color: white; box-shadow: var(--shadow); opacity: 0; transform: translateY(10px); pointer-events: none; transition: .2s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 21px; scroll-margin-top: 18px; }
+    .stat-card { display: flex; align-items: center; gap: 14px; min-height: 105px; padding: 18px; border: 1px solid #e2e9ec; border-radius: 15px; background: var(--paper); box-shadow: var(--shadow); }
+    .stat-icon { display: grid; place-items: center; width: 46px; height: 46px; flex: 0 0 46px; border-radius: 13px; font-size: 21px; font-weight: 750; }
+    .stat-icon.blue { color: #3578a2; background: #e6f1f8; }
+    .stat-icon.green { color: #1d805f; background: #e7f4ee; }
+    .stat-icon.gold { color: #916b0f; background: #fff3d6; }
+    .stat-label { display: block; color: var(--muted); font-size: 12px; font-weight: 650; }
+    .stat-value { display: block; margin-top: 3px; color: var(--ink); font-size: 21px; font-weight: 760; line-height: 1.2; }
+    .stat-note { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .row-actions { display: flex; align-items: center; gap: 6px; }
+    .delete-btn { min-height: 32px; padding: 0 10px; background: #fff; border: 1px solid #e5caca; border-radius: 7px; color: #a33d3d; cursor: pointer; font-size: 12px; font-weight: 650; }
+    .delete-btn:hover { background: #fff0f0; border-color: #d89c9c; }
+    .bottom-nav { display: none; }
+    :root[data-theme="dark"] .form-card,
+    :root[data-theme="dark"] .month-card,
+    :root[data-theme="dark"] .stat-card { border-color: #2d414d; }
+    :root[data-theme="dark"] .field label,
+    :root[data-theme="dark"] .field-label { color: #c6d3da; }
+    :root[data-theme="dark"] input,
+    :root[data-theme="dark"] select { border-color: #415662; background-color: #111c24; color: var(--ink); }
+    :root[data-theme="dark"] input:disabled,
+    :root[data-theme="dark"] select:disabled { background: #202d36; color: #81919a; }
+    :root[data-theme="dark"] .check-wrap { border-color: #66582f; color: #f1d99c; }
+    :root[data-theme="dark"] .breakdown { background: #111d25; }
+    :root[data-theme="dark"] .break-item { border-color: #354650; }
+    :root[data-theme="dark"] .month-head { border-color: #2d414d; background: #1a2933; }
+    :root[data-theme="dark"] th { background: #17242e; color: #a8b8c1; }
+    :root[data-theme="dark"] td { border-color: #2a3a44; color: #d2dde2; }
+    :root[data-theme="dark"] tbody tr:hover { background: #1b2a34; }
+    :root[data-theme="dark"] .role-tag { background: #243943; color: #c3d8e0; }
+    :root[data-theme="dark"] .edit-btn,
+    :root[data-theme="dark"] .btn-secondary { border-color: #415662; background: #1b2a34; color: #d4e0e5; }
+    :root[data-theme="dark"] .edit-btn:hover,
+    :root[data-theme="dark"] .btn-secondary:hover { background: #263a44; }
+    :root[data-theme="dark"] .delete-btn { border-color: #704444; background: #2a2023; color: #ffaaaa; }
+    :root[data-theme="dark"] .delete-btn:hover { background: #42292d; }
+    :root[data-theme="dark"] .empty-state { border-color: #40545f; background: rgba(23,36,46,.65); }
+    :root[data-theme="dark"] .empty-state strong { color: #d8e3e8; }
+    :root[data-theme="dark"] .stat-icon.blue { color: #91c8e8; background: #203949; }
+    :root[data-theme="dark"] .stat-icon.green { color: #8fe0b7; background: #1c3b31; }
+    :root[data-theme="dark"] .stat-icon.gold { color: #f0d27d; background: #3b341f; }
+    :root[data-theme="dark"] .delete-btn { color: #ffb5b5; }
+    @media (max-width: 850px) {
+      .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .topbar-inner { min-height: 100px; }
+    }
+    @media (max-width: 650px) {
+      main { padding-bottom: 108px; }
+      .bottom-nav {
+        position: fixed; z-index: 5; inset: auto 0 0; display: grid; grid-template-columns: repeat(3, 1fr);
+        padding: 7px 10px calc(7px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line);
+        background: var(--paper); box-shadow: 0 -8px 24px rgba(16,43,67,.09);
+      }
+      .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 48px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; font-size: 10px; font-weight: 650; }
+      .nav-btn span:first-child { font-size: 19px; line-height: 1.1; }
+      .nav-btn.active { background: var(--green-soft); color: var(--green); }
+      .toast { bottom: 82px; }
+    }
+    @media (max-width: 560px) {
+      .topbar-inner, main { width: min(100% - 24px, 1180px); }
+      .topbar-inner { align-items: flex-start; flex-direction: column; gap: 13px; padding: 18px 0; }
+      .header-actions { width: 100%; }
+      .total-box { width: auto; flex: 1; min-width: 0; display: flex; justify-content: space-between; align-items: center; text-align: left; padding: 9px 13px; }
+      .total-value { font-size: 19px; }
+      main { padding-top: 15px; }
+      .form-card { padding: 17px 14px; }
+      .section-head { margin-bottom: 15px; }
+      .fields { grid-template-columns: 1fr; gap: 10px; }
+      .hint { min-height: 0; }
+      .breakdown { grid-template-columns: repeat(2, 1fr); gap: 13px 8px; }
+      .break-item { padding: 0 7px; }
+      .break-item:nth-child(2) { border: 0; }
+      .break-item:nth-child(3) { padding-left: 2px; }
+      .form-actions { flex-wrap: wrap; }
+      .form-actions .btn { flex: 1; }
+      .month-head { padding: 13px 14px; }
+      .month-title { font-size: 15px; }
+      .month-sum { font-size: 15px; }
+      .month-meta { display: block; margin: 2px 0 0; }
+      .stats-grid { grid-template-columns: 1fr; gap: 9px; margin-bottom: 15px; }
+      .stat-card { min-height: 81px; padding: 13px 15px; }
+      .stat-icon { width: 42px; height: 42px; flex-basis: 42px; }
+      .stat-value { font-size: 19px; }
+      .theme-toggle { min-height: 42px; padding: 0 10px; font-size: 12px; }
+      .row-actions { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">H</div>
+        <div>
+          <h1>Hakem Ücret Takibi</h1>
+          <p class="subtitle">Maç ücretleri, yol ve harcırah hesabı</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="total-box">
+          <span class="total-label">Genel toplam kazanç</span>
+          <span class="total-value" id="grandTotal">₺0,00</span>
+        </div>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Koyu temaya geç">
+          <span class="theme-icon" id="themeIcon" aria-hidden="true">☾</span><span id="themeLabel">Koyu tema</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="summaryStats" class="stats-grid" aria-label="Özet istatistikler">
+      <article class="stat-card">
+        <span class="stat-icon blue" aria-hidden="true">▦</span>
+        <div><span class="stat-label">Bu ay yapılan maç</span><strong class="stat-value" id="statMonthCount">0 maç</strong><span class="stat-note" id="statMonthLabel"></span></div>
+      </article>
+      <article class="stat-card">
+        <span class="stat-icon green" aria-hidden="true">₺</span>
+        <div><span class="stat-label">Ortalama maç başı kazanç</span><strong class="stat-value" id="statAverage">₺0,00</strong><span class="stat-note">Girilen tüm maçların ortalaması</span></div>
+      </article>
+      <article class="stat-card">
+        <span class="stat-icon gold" aria-hidden="true">★</span>
+        <div><span class="stat-label">En çok yönetilen lig türü</span><strong class="stat-value" id="statTopType">—</strong><span class="stat-note" id="statTopTypeShare">Henüz maç yok</span></div>
+      </article>
+    </section>
+
+    <section id="matchCard" class="form-card" aria-labelledby="formTitle">
+      <div class="section-head">
+        <div>
+          <h2 id="formTitle">Maç ekle</h2>
+          <p class="section-hint">Maç bilgilerini ve görev ücretini girin.</p>
+        </div>
+      </div>
+
+      <form id="matchForm">
+        <div class="fields">
+          <div class="field">
+            <label for="matchDate">Maç tarihi</label>
+            <input id="matchDate" type="date" required>
+          </div>
+          <div class="field">
+            <label for="matchType">Maç türü</label>
+            <select id="matchType" required></select>
+          </div>
+          <div class="field">
+            <label for="role">Görev</label>
+            <select id="role" required>
+              <option value="referee">Hakem</option>
+              <option value="assistant">Yardımcı hakem</option>
+              <option value="fourth">4. hakem</option>
+            </select>
+          </div>
+          <div class="field">
+            <span class="field-label">Aynı gün ve aynı yerde</span>
+            <div class="check-wrap">
+              <input id="secondMatch" type="checkbox">
+              <label for="secondMatch">2. maç (yol ve harcırah 0 TL)</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="locationType">Görev yeri / harcırah</label>
+            <select id="locationType">
+              <option value="home">Ev sahibi / ikamet ilçesi (%25)</option>
+              <option value="away">Deplasman (%50)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="distanceBand">Yol mesafesi</label>
+            <select id="distanceBand">
+              <option value="0">Yol ücreti yok</option>
+              <option value="1">0–20 km · 460 TL</option>
+              <option value="2">21–50 km · 550 TL</option>
+              <option value="3">51–75 km · 650 TL</option>
+              <option value="4">76–100 km · 830 TL</option>
+              <option value="5">101–199 km · 1.382 TL</option>
+              <option value="6">200 km ve üzeri · 3.202 TL</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="travelFee">Yol ücreti (TL)</label>
+            <input id="travelFee" type="number" min="0" step="0.01" value="0">
+            <p class="hint">Kilometre aralığı seçildiğinde ücret gelir; tutarı değiştirebilirsiniz.</p>
+          </div>
+          <div class="field">
+            <label for="allowance">Harcırah (TL)</label>
+            <input id="allowance" type="number" min="0" step="0.01" value="0">
+            <p class="hint" id="allowanceHint">Maç ücretine göre hesaplanır; tutarı değiştirebilirsiniz.</p>
+          </div>
+        </div>
+
+        <div class="breakdown" aria-live="polite">
+          <div class="break-item"><span class="break-label">Maç ücreti</span><span class="break-value" id="previewMatch">₺0,00</span></div>
+          <div class="break-item"><span class="break-label">Yol ücreti</span><span class="break-value" id="previewTravel">₺0,00</span></div>
+          <div class="break-item"><span class="break-label">Harcırah</span><span class="break-value" id="previewAllowance">₺0,00</span></div>
+          <div class="break-item total"><span class="break-label">Bu maçın toplamı</span><span class="break-value" id="previewTotal">₺0,00</span></div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-secondary" id="cancelEdit" type="button" hidden>Vazgeç</button>
+          <button class="btn btn-primary" id="saveButton" type="submit">＋ Maçı ekle</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="monthlySection" aria-label="Aylık maçlar">
+      <div class="months-heading">
+        <h2>Aylık maçlar</h2>
+        <span class="match-count" id="matchCount">0 maç</span>
+      </div>
+      <section id="monthList" class="month-list" aria-live="polite"></section>
+    </section>
+  </main>
+  <nav class="bottom-nav" aria-label="Sayfa gezintisi">
+    <button class="nav-btn" type="button" data-target="matchCard"><span aria-hidden="true">＋</span><span>Maç ekle</span></button>
+    <button class="nav-btn" type="button" data-target="summaryStats"><span aria-hidden="true">▦</span><span>Özet</span></button>
+    <button class="nav-btn" type="button" data-target="monthlySection"><span aria-hidden="true">☷</span><span>Maçlar</span></button>
+  </nav>
+  <div id="toast" class="toast" role="status"></div>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = 'hakem-ucret-takibi-v1';
+      const THEME_KEY = 'hakem-ucret-temasi-v1';
+      const roles = { referee: 'Hakem', assistant: 'Yardımcı hakem', fourth: '4. hakem' };
+      const types = [
+        { id: 'paf', label: 'PAF U19', fees: { referee: 2200, assistant: 1300, fourth: 1040 }, allowance: true },
+        { id: 'women', label: 'Kadın SL / Futsal / Plaj', fees: { referee: 1620, assistant: 970, fourth: 810 }, allowance: true },
+        { id: 'league', label: 'SAL / 1K / 2K / Kadınlar 1.-2.-3. Ligi', fees: { referee: 1300, assistant: 780, fourth: 650 }, allowance: true },
+        { id: 'youth', label: 'U15 / U16 / U17 / U18 / U19 / İşitme Engelliler', fees: { referee: 1165, assistant: 710, fourth: 585 }, allowance: true },
+        { id: 'u10', label: 'U10 / U11 / U12 / U13 / U14', fees: { referee: 1040, assistant: 650, fourth: 520 }, allowance: true },
+        { id: 'special', label: 'Futsal İl / Plaj İl / Halı Saha / Özel Turnuvalar', fees: { referee: 650, assistant: 450, fourth: 0 }, allowance: false }
+      ];
+      const travelRates = { 1: 460, 2: 550, 3: 650, 4: 830, 5: 1382, 6: 3202 };
+      const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+      const $ = (id) => document.getElementById(id);
+      const form = $('matchForm');
+      const dateInput = $('matchDate');
+      const typeInput = $('matchType');
+      const roleInput = $('role');
+      const secondInput = $('secondMatch');
+      const locationInput = $('locationType');
+      const distanceInput = $('distanceBand');
+      const travelInput = $('travelFee');
+      const allowanceInput = $('allowance');
+      let matches = loadMatches();
+      let editingId = null;
+      let toastTimer;
+
+      for (const type of types) {
+        const option = document.createElement('option');
+        option.value = type.id;
+        option.textContent = type.label;
+        typeInput.append(option);
+      }
+
+      function loadMatches() {
+        try {
+          const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+          return Array.isArray(value) ? value.filter(item => item && item.id && item.date && item.typeId && item.role) : [];
+        } catch { return []; }
+      }
+      function saveMatches() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(matches)); }
+        catch { showToast('Maçlar tarayıcıya kaydedilemedi.'); }
+      }
+      function currentType() { return types.find(type => type.id === typeInput.value) || types[0]; }
+      function roundMoney(value) { return Math.round((Number(value) + Number.EPSILON) * 100) / 100; }
+      function numberValue(input) { const n = Number(input.value); return Number.isFinite(n) && n >= 0 ? roundMoney(n) : 0; }
+      function money(value) {
+        return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(roundMoney(value || 0));
+      }
+      function baseFee() { return currentType().fees[roleInput.value] || 0; }
+      function allowanceDefault() {
+        const type = currentType();
+        if (!type.allowance || secondInput.checked) return 0;
+        return roundMoney(baseFee() * (locationInput.value === 'away' ? 0.5 : 0.25));
+      }
+      function calculatedTravel() {
+        if (secondInput.checked) return 0;
+        return numberValue(travelInput);
+      }
+      function calculatedAllowance() {
+        if (secondInput.checked || !currentType().allowance) return 0;
+        return numberValue(allowanceInput);
+      }
+      function refreshPreview() {
+        const fee = baseFee();
+        const travel = calculatedTravel();
+        const allowance = calculatedAllowance();
+        $('previewMatch').textContent = money(fee);
+        $('previewTravel').textContent = money(travel);
+        $('previewAllowance').textContent = money(allowance);
+        $('previewTotal').textContent = money(fee + travel + allowance);
+      }
+      function refreshControls(recomputeAllowance = false) {
+        const special = !currentType().allowance;
+        const locked = secondInput.checked;
+        const disableExpenses = locked;
+        locationInput.disabled = disableExpenses || special;
+        distanceInput.disabled = disableExpenses;
+        travelInput.disabled = disableExpenses;
+        allowanceInput.disabled = disableExpenses || special;
+        if (recomputeAllowance && !locked) allowanceInput.value = String(allowanceDefault());
+        if (locked) {
+          travelInput.value = '0';
+          allowanceInput.value = '0';
+        } else if (special) {
+          allowanceInput.value = '0';
+          $('allowanceHint').textContent = 'Bu maç türü için tabloda harcırah belirtilmemiş.';
+        } else {
+          $('allowanceHint').textContent = 'Maç ücretine göre hesaplanır; tutarı değiştirebilirsiniz.';
+        }
+        if (locked) $('allowanceHint').textContent = '2. maçta harcırah ve yol ücreti 0 TL olur.';
+        refreshPreview();
+      }
+      function parseDateParts(date) {
+        const [year, month, day] = date.split('-').map(Number);
+        return { year, month, day };
+      }
+      function displayDate(date) {
+        const { year, month, day } = parseDateParts(date);
+        return `${String(day).padStart(2, '0')}.${String(month).padStart(2, '0')}.${year}`;
+      }
+      function monthKey(date) {
+        const { year, month } = parseDateParts(date);
+        return `${year}-${String(month).padStart(2, '0')}`;
+      }
+      function makeCell(row, text, className = '') {
+        const cell = document.createElement('td');
+        if (className) cell.className = className;
+        cell.textContent = text;
+        row.append(cell);
+        return cell;
+      }
+      function render() {
+        const groups = new Map();
+        for (const match of matches) {
+          const key = monthKey(match.date);
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(match);
+        }
+        const monthList = $('monthList');
+        monthList.replaceChildren();
+        const sortedMonths = [...groups.keys()].sort((a, b) => b.localeCompare(a));
+        const grand = matches.reduce((sum, item) => sum + item.total, 0);
+        $('grandTotal').textContent = money(grand);
+        $('matchCount').textContent = `${matches.length} ${matches.length === 1 ? 'maç' : 'maç'}`;
+        const now = new Date();
+        const thisMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const thisMonthCount = matches.filter(item => monthKey(item.date) === thisMonthKey).length;
+        $('statMonthCount').textContent = `${thisMonthCount} maç`;
+        $('statMonthLabel').textContent = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+        $('statAverage').textContent = money(matches.length ? grand / matches.length : 0);
+        if (matches.length) {
+          const counts = new Map();
+          for (const item of matches) counts.set(item.typeId, (counts.get(item.typeId) || 0) + 1);
+          const topType = types.reduce((best, type) => (counts.get(type.id) || 0) > (counts.get(best.id) || 0) ? type : best, types[0]);
+          const topCount = counts.get(topType.id) || 0;
+          $('statTopType').textContent = topType.label;
+          $('statTopTypeShare').textContent = `${Math.round(topCount / matches.length * 100)}% · ${topCount} maç`;
+        } else {
+          $('statTopType').textContent = '—';
+          $('statTopTypeShare').textContent = 'Henüz maç yok';
+        }
+        if (!sortedMonths.length) {
+          const empty = document.createElement('div');
+          empty.className = 'empty-state';
+          const mark = document.createElement('div'); mark.className = 'empty-mark'; mark.textContent = '+';
+          const strong = document.createElement('strong'); strong.textContent = 'Henüz maç eklenmedi';
+          const note = document.createElement('span'); note.textContent = 'İlk maçınızı yukarıdaki formdan ekleyin.';
+          empty.append(mark, strong, note); monthList.append(empty); return;
+        }
+        for (const key of sortedMonths) {
+          const list = groups.get(key).sort((a, b) => a.date.localeCompare(b.date));
+          const [year, month] = key.split('-').map(Number);
+          const section = document.createElement('article'); section.className = 'month-card';
+          const head = document.createElement('div'); head.className = 'month-head';
+          const title = document.createElement('h3'); title.className = 'month-title';
+          title.append(document.createTextNode(`${year} ${monthNames[month - 1]}`));
+          const meta = document.createElement('span'); meta.className = 'month-meta'; meta.textContent = `${list.length} ${list.length === 1 ? 'maç' : 'maç'}`; title.append(meta);
+          const sum = document.createElement('div'); sum.className = 'month-sum';
+          sum.textContent = money(list.reduce((acc, item) => acc + item.total, 0));
+          head.append(title, sum);
+          const scroll = document.createElement('div'); scroll.className = 'table-scroll';
+          const table = document.createElement('table');
+          const thead = document.createElement('thead'); const headerRow = document.createElement('tr');
+          for (const [label, cls] of [['Tarih', ''], ['Maç türü', ''], ['Görev', ''], ['Maç ücreti', 'money'], ['Yol', 'money'], ['Harcırah', 'money'], ['Toplam', 'money'], ['İşlem', '']]) {
+            const th = document.createElement('th'); th.textContent = label; if (cls) th.className = cls; headerRow.append(th);
+          }
+          thead.append(headerRow);
+          const tbody = document.createElement('tbody');
+          for (const match of list) {
+            const row = document.createElement('tr');
+            makeCell(row, displayDate(match.date), 'date-cell');
+            makeCell(row, (types.find(type => type.id === match.typeId) || {}).label || '');
+            const roleCell = document.createElement('td');
+            const roleTag = document.createElement('span'); roleTag.className = 'role-tag'; roleTag.textContent = roles[match.role] || match.role;
+            roleCell.append(roleTag);
+            if (match.second) { const secondTag = document.createElement('span'); secondTag.className = 'second-tag'; secondTag.textContent = '2. maç'; roleCell.append(document.createElement('br'), secondTag); }
+            row.append(roleCell);
+            makeCell(row, money(match.matchFee), 'money');
+            makeCell(row, money(match.travelFee), 'money');
+            makeCell(row, money(match.allowance), 'money');
+            makeCell(row, money(match.total), 'money total-cell');
+            const actionCell = document.createElement('td');
+            const actions = document.createElement('div'); actions.className = 'row-actions';
+            const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'edit-btn'; edit.textContent = 'Düzenle';
+            edit.addEventListener('click', () => beginEdit(match));
+            const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'delete-btn'; remove.textContent = 'Sil';
+            remove.addEventListener('click', () => deleteMatch(match));
+            actions.append(edit, remove); actionCell.append(actions); row.append(actionCell);
+            tbody.append(row);
+          }
+          table.append(thead, tbody); scroll.append(table); section.append(head, scroll); monthList.append(section);
+        }
+      }
+      function showToast(message) {
+        const toast = $('toast'); toast.textContent = message; toast.classList.add('show');
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+      }
+      function deleteMatch(match) {
+        const typeName = (types.find(type => type.id === match.typeId) || {}).label || 'maç';
+        if (!window.confirm(`${displayDate(match.date)} tarihli ${typeName} maçını silmek istiyor musunuz?`)) return;
+        matches = matches.filter(item => item.id !== match.id);
+        if (editingId === match.id) resetForm();
+        saveMatches(); render(); showToast('Maç silindi.');
+      }
+      function setTheme(theme) {
+        const dark = theme === 'dark';
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        $('themeIcon').textContent = dark ? '☼' : '☾';
+        $('themeLabel').textContent = dark ? 'Açık tema' : 'Koyu tema';
+        $('themeToggle').setAttribute('aria-label', dark ? 'Açık temaya geç' : 'Koyu temaya geç');
+        try { localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light'); } catch { /* Tema bu oturumda uygulanır. */ }
+      }
+      function resetForm() {
+        editingId = null;
+        form.reset();
+        const today = new Date();
+        dateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        typeInput.value = types[0].id;
+        roleInput.value = 'referee';
+        locationInput.value = 'home';
+        distanceInput.value = '0';
+        travelInput.value = '0';
+        allowanceInput.value = String(allowanceDefault());
+        $('formTitle').textContent = 'Maç ekle';
+        $('saveButton').textContent = '＋ Maçı ekle';
+        $('cancelEdit').hidden = true;
+        refreshControls(false);
+      }
+      function beginEdit(match) {
+        editingId = match.id;
+        dateInput.value = match.date;
+        typeInput.value = match.typeId;
+        roleInput.value = match.role;
+        secondInput.checked = Boolean(match.second);
+        locationInput.value = match.locationType || 'home';
+        distanceInput.value = match.second ? '0' : (match.distanceBand || '0');
+        travelInput.value = String(match.travelFee || 0);
+        allowanceInput.value = String(match.allowance || 0);
+        $('formTitle').textContent = 'Maçı düzenle';
+        $('saveButton').textContent = 'Değişiklikleri kaydet';
+        $('cancelEdit').hidden = false;
+        refreshControls(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      typeInput.addEventListener('change', () => refreshControls(true));
+      roleInput.addEventListener('change', () => refreshControls(true));
+      locationInput.addEventListener('change', () => refreshControls(true));
+      distanceInput.addEventListener('change', () => {
+        travelInput.value = String(travelRates[distanceInput.value] || 0);
+        refreshPreview();
+      });
+      secondInput.addEventListener('change', () => {
+        if (secondInput.checked) distanceInput.value = '0';
+        refreshControls(false);
+      });
+      travelInput.addEventListener('input', refreshPreview);
+      allowanceInput.addEventListener('input', refreshPreview);
+      $('cancelEdit').addEventListener('click', resetForm);
+      $('themeToggle').addEventListener('click', () => {
+        setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+      });
+      document.querySelectorAll('.nav-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          document.getElementById(button.dataset.target).scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.querySelectorAll('.nav-btn').forEach(item => item.classList.toggle('active', item === button));
+        });
+      });
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (!dateInput.value) { dateInput.focus(); return; }
+        const fee = baseFee();
+        const travel = calculatedTravel();
+        const allowance = calculatedAllowance();
+        const record = {
+          id: editingId || (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`),
+          date: dateInput.value,
+          typeId: typeInput.value,
+          role: roleInput.value,
+          second: secondInput.checked,
+          locationType: locationInput.value,
+          distanceBand: distanceInput.value,
+          matchFee: fee,
+          travelFee: travel,
+          allowance,
+          total: roundMoney(fee + travel + allowance)
+        };
+        if (editingId) {
+          matches = matches.map(item => item.id === editingId ? record : item);
+          showToast('Maç bilgileri güncellendi.');
+        } else {
+          matches.push(record);
+          showToast('Maç eklendi.');
+        }
+        saveMatches(); render(); resetForm();
+      });
+      try { setTheme(localStorage.getItem(THEME_KEY) || 'light'); }
+      catch { setTheme('light'); }
+      resetForm();
+      render();
+    })();
+  </script>
+</body>
+</html>
