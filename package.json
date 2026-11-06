@@ -1,0 +1,44 @@
+{
+  "name": "hakem-ucret-takibi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hakem Ücret Takibi - Windows masaüstü uygulaması",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^45.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "net.hakem.ucrettakibi",
+    "productName": "Hakem Ücret Takibi",
+    "asar": true,
+    "files": [
+      "desktop/main.cjs",
+      "desktop/preload.cjs",
+      "server.js",
+      "rates.json",
+      "public/**/*",
+      "package.json",
+      "!data/**",
+      "!node_modules/electron-builder/**"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "HakemUygulamasi.exe"
+    }
+  }
+}
