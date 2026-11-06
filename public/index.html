@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102b43">
+  <title>Hakem Ücret Takibi</title>
+  <script src="/theme-init.js"></script>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<svg class="icon-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="tabler-shield-check" viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 4.5-3.2 7.7-8 9-4.8-1.3-8-4.5-8-9V7l8-4z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="tabler-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/></symbol>
+    <symbol id="tabler-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="tabler-calendar-plus" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16M12 14v5M9.5 16.5h5"/></symbol>
+    <symbol id="tabler-calendar-month" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16M8 15h.01M12 15h.01M16 15h.01M8 18h.01M12 18h.01"/></symbol>
+    <symbol id="tabler-chart-pie" viewBox="0 0 24 24"><path d="M12 3v9h9"/><path d="M20.5 14A8.5 8.5 0 1 1 10 3.5"/><path d="M15 3.5A8.5 8.5 0 0 1 20.5 9"/></symbol>
+    <symbol id="tabler-calendar-event" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/><rect x="8" y="14" width="3" height="3" rx=".5"/></symbol>
+    <symbol id="tabler-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 8.5c-.7-.6-1.7-.9-2.8-.9-1.5 0-2.7.8-2.7 1.9s1.1 1.7 2.7 2c1.6.3 2.7.9 2.7 2s-1.2 2-2.9 2c-1.1 0-2.1-.3-2.8-.9"/></symbol>
+    <symbol id="tabler-trophy" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4"/></symbol>
+    <symbol id="tabler-moon" viewBox="0 0 24 24"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13z"/></symbol>
+    <symbol id="tabler-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></symbol>
+    <symbol id="tabler-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="tabler-file-type-pdf" viewBox="0 0 24 24"><path d="M14 3v5h5M5 3h9l5 5v13H5z"/><path d="M8 16h1.5a1.5 1.5 0 0 0 0-3H8v5M13 18v-5h1a2.5 2.5 0 0 1 0 5h-1M18 18v-5h3M18 15h2"/></symbol>
+    <symbol id="tabler-file-spreadsheet" viewBox="0 0 24 24"><path d="M14 3v5h5M5 3h9l5 5v13H5z"/><path d="M8 13h8M8 16h8M11 12v7M15 12v7"/></symbol>
+    <symbol id="tabler-x" viewBox="0 0 24 24"><path d="m18 6-12 12M6 6l12 12"/></symbol>
+    <symbol id="tabler-pencil" viewBox="0 0 24 24"><path d="m4 20 4-.8L19 8.2a2.1 2.1 0 0 0-3-3L5 16.2 4 20z"/><path d="m14.5 6.5 3 3"/></symbol>
+    <symbol id="tabler-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 14h12l1-14M9 7V4h6v3"/></symbol>
+    <symbol id="tabler-user-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="9" r="3"/><path d="M6.8 18a5.7 5.7 0 0 1 10.4 0"/></symbol>
+  </svg>
+  <div class="app-loader" id="appLoader" role="status" aria-live="polite" aria-busy="true">
+    <div class="loader-card">
+      <span class="loader-mark" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-shield-check"></use></svg></span>
+      <span class="loader-spinner" aria-hidden="true"></span>
+      <strong id="loaderTitle">Verileriniz yükleniyor</strong>
+      <p id="loaderMessage">Maç kayıtları hazırlanıyor.</p>
+      <button class="btn btn-primary" id="retryInitialLoad" type="button" hidden>Yeniden dene</button>
+    </div>
+  </div>
+  <div class="app-shell" id="appShell" hidden>
+    <aside class="sidebar">
+      <a class="sidebar-brand" href="#" data-open-page="home" aria-label="Ana sayfaya git">
+        <span class="brand-mark" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-shield-check"></use></svg></span>
+        <span><strong>Hakem Ücret</strong><small>Takibi</small></span>
+      </a>
+      <div class="sidebar-label">MENÜ</div>
+      <nav class="side-nav" aria-label="Ana menü">
+        <button type="button" class="side-nav-item" data-open-page="add"><span class="side-icon" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-calendar-plus"></use></svg></span><span>Maç Ekle</span></button>
+        <button type="button" class="side-nav-item" data-open-page="months"><span class="side-icon" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-calendar-month"></use></svg></span><span>Aylık Tablo</span></button>
+        <button type="button" class="side-nav-item" data-open-page="stats"><span class="side-icon" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-chart-pie"></use></svg></span><span>İstatistikler</span></button>
+      </nav>
+      <button class="sidebar-profile-button" id="profileSidebarButton" type="button" aria-label="Profil ayarlarını aç">
+        <span class="profile-avatar" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-user-circle"></use></svg></span>
+        <span class="profile-shortcut-copy"><strong id="sidebarProfileUsername">Ayarlar</strong><small>Tema ve sezon</small></span>
+        <svg class="ui-icon profile-chevron" aria-hidden="true"><use href="#tabler-chevron-right"></use></svg>
+      </button>
+      <div class="sidebar-bottom"><span class="sidebar-dot"></span>Maç ve kazanç takibi</div>
+    </aside>
+
+    <div class="app-column">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <button class="mobile-home" type="button" data-open-page="home" aria-label="Hakem Ücret Takibi ana sayfa"><svg class="ui-icon"><use href="#tabler-home"></use></svg></button>
+          <div class="page-heading">
+            <span class="page-eyebrow" id="pageEyebrow">GENEL BAKIŞ</span>
+            <h1 id="pageTitle">Ana Sayfa</h1>
+            <p class="page-subtitle" id="pageSubtitle">Hakem ücretlerinizi ve maçlarınızı takip edin.</p>
+          </div>
+          <div class="header-actions">
+            <div class="total-box">
+              <span class="total-label">Genel toplam kazanç</span>
+              <span class="total-value" id="grandTotal">₺0,00</span>
+            </div>
+            <button class="profile-top-button" id="profileTopButton" type="button" aria-label="Profil ayarlarını aç">
+              <svg class="ui-icon" aria-hidden="true"><use href="#tabler-user-circle"></use></svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main id="appMain">
+        <section id="homePage" class="page active" data-page="home">
+          <section id="summaryStats" class="stats-grid" aria-label="Özet istatistikler">
+            <article class="stat-card">
+              <span class="stat-icon blue" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-calendar-event"></use></svg></span>
+              <div><span class="stat-label">Bu ay yapılan maç</span><strong class="stat-value" id="statMonthCount">0 maç</strong><span class="stat-note" id="statMonthLabel"></span></div>
+            </article>
+            <article class="stat-card">
+              <span class="stat-icon green" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-coin"></use></svg></span>
+              <div><span class="stat-label">Ortalama maç başı kazanç</span><strong class="stat-value" id="statAverage">₺0,00</strong><span class="stat-note">Girilen tüm maçların ortalaması</span></div>
+            </article>
+            <article class="stat-card">
+              <span class="stat-icon gold" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-trophy"></use></svg></span>
+              <div><span class="stat-label">En sık çıktığınız tür</span><strong class="stat-value" id="statTopType">—</strong><span class="stat-note" id="statTopTypeShare">Henüz maç yok</span></div>
+            </article>
+          </section>
+          <article class="chart-card home-top-matches">
+            <div class="chart-head">
+              <div><h2 class="chart-title">En çok çıktığınız kategoride maçlar</h2><p class="chart-caption" id="topTypeMatchesCaption">Maçlarınız burada listelenir.</p></div>
+              <span id="topTypeMatchesBadge" class="chart-period">0 maç</span>
+            </div>
+            <div class="table-scroll top-type-table-scroll">
+              <table class="top-type-table">
+                <thead><tr><th>Tarih</th><th>Maç türü</th><th>Görevi</th></tr></thead>
+                <tbody id="topTypeMatchesRows"><tr><td colspan="3" class="top-type-empty">Henüz maç kaydı yok.</td></tr></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section id="addPage" class="page" data-page="add">
+          <section id="matchCard" class="form-card" aria-labelledby="formTitle">
+      <div class="section-head">
+        <div>
+          <h2 id="formTitle">Maç ekle</h2>
+          <p class="section-hint">Maç bilgilerini ve görev ücretini girin.</p>
+        </div>
+      </div>
+
+      <form id="matchForm">
+        <div class="fields">
+          <div class="field">
+            <label for="matchDate">Maç tarihi</label>
+            <input id="matchDate" type="date" required>
+          </div>
+          <div class="field">
+            <label for="matchType">Maç türü</label>
+            <select id="matchType" required></select>
+          </div>
+          <div class="field">
+            <label for="role">Görev</label>
+            <select id="role" required>
+              <option value="referee">Hakem</option>
+              <option value="assistant">Yardımcı hakem</option>
+              <option value="fourth">4. hakem</option>
+            </select>
+          </div>
+          <div class="field">
+            <span class="field-label">Aynı gün ve aynı yerde</span>
+            <div class="check-wrap">
+              <input id="secondMatch" type="checkbox">
+              <label for="secondMatch">2. maç (yol ve harcırah 0 TL)</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="locationType">Görev yeri / harcırah</label>
+            <select id="locationType">
+              <option value="home">Ev sahibi / ikamet ilçesi (%25)</option>
+              <option value="away">Deplasman (%50)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="distanceBand">Yol mesafesi</label>
+            <select id="distanceBand">
+              <option value="0">Yol ücreti yok</option>
+              <option value="1">0–20 km · 460 TL</option>
+              <option value="2">21–50 km · 550 TL</option>
+              <option value="3">51–75 km · 650 TL</option>
+              <option value="4">76–100 km · 830 TL</option>
+              <option value="5">101–199 km · 1.382 TL</option>
+              <option value="6">200 km ve üzeri · 3.202 TL</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="travelFee">Yol ücreti (TL)</label>
+            <input id="travelFee" type="number" min="0" step="0.01" value="0">
+            <p class="hint">Kilometre aralığı seçildiğinde ücret gelir; tutarı değiştirebilirsiniz.</p>
+          </div>
+          <div class="field">
+            <label for="allowance">Harcırah (TL)</label>
+            <input id="allowance" type="number" min="0" step="0.01" value="0">
+            <p class="hint" id="allowanceHint">Maç ücretine göre hesaplanır; tutarı değiştirebilirsiniz.</p>
+          </div>
+        </div>
+
+        <div class="breakdown" aria-live="polite">
+          <div class="break-item"><span class="break-label">Maç ücreti</span><span class="break-value" id="previewMatch">₺0,00</span></div>
+          <div class="break-item"><span class="break-label">Yol ücreti</span><span class="break-value" id="previewTravel">₺0,00</span></div>
+          <div class="break-item"><span class="break-label">Harcırah</span><span class="break-value" id="previewAllowance">₺0,00</span></div>
+          <div class="break-item total"><span class="break-label">Bu maçın toplamı</span><span class="break-value" id="previewTotal">₺0,00</span></div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-secondary" id="cancelEdit" type="button" hidden>Vazgeç</button>
+          <button class="btn btn-primary" id="saveButton" type="submit"><svg class="ui-icon" aria-hidden="true"><use href="#tabler-plus"></use></svg> Maçı ekle</button>
+        </div>
+      </form>
+          </section>
+        </section>
+
+        <section id="monthsPage" class="page" data-page="months">
+          <div class="page-section-head">
+            <div><h2>Aylık Tablo</h2><p>Ay kartına tıklayarak maç tablosunu açın.</p></div>
+            <span class="match-count" id="matchCount">0 maç</span>
+          </div>
+          <div id="monthCards" class="month-card-grid"></div>
+          <div id="monthModal" class="modal-overlay" hidden>
+            <section id="monthDetail" class="month-detail" role="dialog" aria-modal="true" aria-labelledby="selectedMonthName">
+              <div class="month-detail-head">
+                <div><span class="detail-eyebrow">AYLIK MAÇ TABLOSU</span><h2 id="selectedMonthName"></h2><p id="selectedMonthCount" class="section-hint"></p></div>
+                <div class="export-actions no-print">
+                  <button class="btn btn-secondary" id="exportPdf" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#tabler-file-type-pdf"></use></svg> PDF olarak kaydet</button>
+                  <button class="btn btn-primary" id="exportExcel" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#tabler-file-spreadsheet"></use></svg> Excel indir</button>
+                  <button class="modal-close no-print" id="closeMonthModal" type="button" aria-label="Kapat"><svg class="ui-icon"><use href="#tabler-x"></use></svg></button>
+                </div>
+              </div>
+              <div class="table-scroll">
+                <table id="selectedMonthTable">
+                  <thead><tr><th>Tarih</th><th>Maç türü</th><th>Görev</th><th class="money">Maç ücreti</th><th class="money">Yol</th><th class="money">Harcırah</th><th class="money">Toplam</th><th>İşlem</th></tr></thead>
+                  <tbody id="selectedMonthRows"></tbody>
+                  <tfoot id="selectedMonthTotal"></tfoot>
+                </table>
+              </div>
+              <p class="print-note no-print">PDF için açılan yazdırma penceresinde “PDF olarak kaydet” seçeneğini kullanın.</p>
+            </section>
+          </div>
+        </section>
+
+        <section id="statsPage" class="page" data-page="stats">
+          <div class="page-section-head"><div><h2>İstatistikler</h2><p>Toplam kazançlar ve yönettiğiniz maç kategorileri.</p></div><span class="earnings-total" id="earningsPageTotal">₺0,00</span></div>
+          <article class="chart-card">
+            <div class="chart-head">
+              <div><h2 class="chart-title">Kazançlar</h2><p class="chart-caption">Ay bazında maç ücreti, yol ve harcırah toplamı</p></div>
+              <span id="chartPeriod" class="chart-period">Henüz veri yok</span>
+            </div>
+            <div id="chartCanvasWrap" class="chart-canvas-wrap" hidden><canvas id="earningsChart" aria-label="Aylık kazanç grafiği"></canvas></div>
+            <div id="chartFallback" class="chart-fallback" aria-label="Aylık kazanç grafiği"></div>
+          </article>
+          <div id="earningsMonthList" class="earnings-month-list"></div>
+          <article class="chart-card category-card">
+            <div class="chart-head">
+              <div><h2 class="chart-title">Çıkılan maç kategorileri</h2><p class="chart-caption">Yönettiğiniz maçların kategoriye göre dağılımı</p></div>
+              <span id="categoryTotalBadge" class="chart-period">0 maç</span>
+            </div>
+            <div class="category-layout">
+              <div id="categoryChartWrap" class="category-chart-wrap" hidden><canvas id="categoryChart" aria-label="Maç kategorilerinin yüzdelik dağılımı"></canvas><div class="category-chart-center" aria-hidden="true"><strong id="categoryChartCount">0</strong><span>maç</span></div></div>
+              <div id="categoryPieFallback" class="category-pie-fallback" hidden><div class="category-pie-center"><strong id="categoryPieCount">0</strong><span>maç</span></div></div>
+              <div id="categoryEmpty" class="category-empty" hidden>Henüz maç kategorisi verisi yok.</div>
+              <div class="category-table-scroll">
+                <table class="category-table">
+                  <thead><tr><th>Maç Kategorisi</th><th class="money">Adet</th><th class="money">%</th></tr></thead>
+                  <tbody id="categoryRows"></tbody>
+                  <tfoot id="categoryFooter"></tfoot>
+                </table>
+              </div>
+            </div>
+          </article>
+        </section>
+</main>
+    </div>
+  </div>
+  <div id="profileDrawer" class="profile-overlay" hidden>
+    <section class="profile-panel" role="dialog" aria-modal="true" aria-labelledby="profileDrawerTitle">
+      <header class="profile-panel-head">
+        <button class="profile-close" id="closeProfileDrawer" type="button" aria-label="Profili kapat"><svg class="ui-icon"><use href="#tabler-x"></use></svg></button>
+        <span class="profile-panel-avatar" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-user-circle"></use></svg></span>
+        <div class="profile-panel-identity"><span class="detail-eyebrow">UYGULAMA</span><h2 id="profileDrawerTitle">Ayarlar</h2><p class="section-hint">Bu bilgisayardaki uygulama tercihleri</p></div>
+      </header>
+      <div class="profile-panel-body">
+        <div class="profile-setting-row">
+          <div><strong>Görünüm</strong><span>Açık veya koyu tema</span></div>
+          <button class="theme-toggle" id="themeToggle" type="button" role="switch" aria-checked="false" aria-label="Koyu temaya geç">
+            <span class="theme-control" aria-hidden="true"><svg class="theme-symbol theme-sun"><use href="#tabler-sun"></use></svg><span class="theme-track"><span class="theme-thumb"></span></span><svg class="theme-symbol theme-moon"><use href="#tabler-moon"></use></svg></span>
+            <span id="themeLabel" class="sr-only">Açık tema</span>
+          </button>
+        </div>
+        <section class="form-card season-reset-card">
+          <div class="section-head"><div><h2>Yeni sezon</h2><p class="section-hint">Bu bilgisayardaki tüm maç kayıtlarını siler.</p></div></div>
+          <form id="resetForm" class="admin-form">
+            <div class="field"><label for="resetConfirm">Onay için SIFIRLA yazın</label><input id="resetConfirm" autocomplete="off" placeholder="SIFIRLA" required></div>
+            <button class="btn btn-danger" type="submit">Maç kayıtlarını sıfırla</button>
+          </form>
+          <p id="resetMessage" class="form-message" role="status" aria-live="polite"></p>
+        </section>
+      </div>
+    </section>
+  </div>
+  <nav class="bottom-nav" aria-label="Sayfa gezintisi">
+    <button class="nav-btn" type="button" data-open-page="add"><svg class="ui-icon" aria-hidden="true"><use href="#tabler-calendar-plus"></use></svg><span>Maç Ekle</span></button>
+    <button class="nav-btn" type="button" data-open-page="months"><svg class="ui-icon" aria-hidden="true"><use href="#tabler-calendar-month"></use></svg><span>Aylık Tablo</span></button>
+    <button class="nav-btn" type="button" data-open-page="stats"><svg class="ui-icon" aria-hidden="true"><use href="#tabler-chart-pie"></use></svg><span>İstatistikler</span></button>  </nav>
+  <div id="toast" class="toast" role="status"></div>
+
+  <script defer src="/app.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.6.1/dist/chart.umd.min.js"></script>
+  <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+</body>
+</html>

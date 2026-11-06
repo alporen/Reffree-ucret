@@ -1,0 +1,1325 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102b43">
+  <title>Hakem Ücret Takibi</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172b3a;
+      --muted: #647584;
+      --navy: #102b43;
+      --navy-2: #173c57;
+      --green: #1d805f;
+      --green-soft: #e7f4ee;
+      --line: #dce5e9;
+      --paper: #ffffff;
+      --bg: #f2f6f7;
+      --amber: #fff2d5;
+      --shadow: 0 14px 35px rgba(16, 43, 67, .07);
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --ink: #e4edf1;
+      --muted: #a1b2bd;
+      --navy: #091722;
+      --navy-2: #142d3d;
+      --green: #58bd91;
+      --green-soft: #173a2e;
+      --line: #344752;
+      --paper: #17242e;
+      --bg: #0d171f;
+      --amber: #342d1b;
+      --shadow: 0 14px 35px rgba(0, 0, 0, .19);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 8% 0%, rgba(50, 126, 150, .08), transparent 36%), var(--bg);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    button, input, select { font: inherit; }
+    .topbar { background: linear-gradient(112deg, #0b263b 0%, #123b55 56%, #15536b 100%); color: #fff; }
+    .topbar-inner, main { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    .topbar-inner {
+      min-height: 112px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 22px 0;
+    }
+    .brand { display: flex; align-items: center; gap: 15px; }
+    .brand-mark {
+      width: 48px; height: 48px; display: grid; place-items: center;
+      border-radius: 14px; background: #1d805f; color: white;
+      font-weight: 800; font-size: 22px; letter-spacing: -1px;
+    }
+    h1 { margin: 0; font-size: clamp(21px, 3vw, 29px); line-height: 1.18; letter-spacing: -.5px; }
+    .subtitle { margin: 6px 0 0; color: #bdccd5; font-size: 14px; }
+    .total-box {
+      min-width: 205px; padding: 12px 17px; border: 1px solid rgba(255,255,255,.2);
+      border-radius: 13px; background: rgba(255,255,255,.07); text-align: right;
+    }
+    .total-label { display: block; color: #c7d6de; font-size: 12px; }
+    .total-value { display: block; margin-top: 1px; font-size: 23px; font-weight: 750; letter-spacing: -.4px; }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .theme-toggle {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px;
+      padding: 0 13px; border: 1px solid rgba(255,255,255,.25); border-radius: 10px;
+      background: rgba(255,255,255,.07); color: #fff; cursor: pointer; white-space: nowrap;
+    }
+    .theme-toggle:hover { background: rgba(255,255,255,.14); }
+    .theme-icon { font-size: 17px; line-height: 1; }
+    .icon-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+    .ui-icon { display: inline-block; width: 18px; height: 18px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .brand-mark .ui-icon { width: 23px; height: 23px; }
+    .side-icon .ui-icon, .month-card-icon .ui-icon { width: 19px; height: 19px; }
+    .stat-icon .ui-icon { width: 22px; height: 22px; }
+    .theme-icon .ui-icon { width: 19px; height: 19px; }
+    .nav-btn .ui-icon { width: 20px; height: 20px; }
+    .btn .ui-icon { width: 17px; height: 17px; }
+    main { padding: 28px 0 56px; }
+    .form-card, .month-card {
+      background: var(--paper); border: 1px solid #e2e9ec; border-radius: 17px; box-shadow: var(--shadow); transition: box-shadow .18s, transform .18s;
+    }
+    .form-card:hover, .month-card:hover { box-shadow: 0 18px 42px rgba(16, 43, 67, .1); }
+    .form-card { padding: 24px; }
+    .section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 19px; }
+    h2 { margin: 0; font-size: 19px; letter-spacing: -.25px; }
+    .section-hint { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+    .fields {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;
+    }
+    .field { min-width: 0; }
+    .field label, .field-label { display: block; margin: 0 0 7px; color: #354c5d; font-size: 13px; font-weight: 650; }
+    input, select {
+      width: 100%; height: 43px; padding: 0 12px; border: 1px solid #cbd7dd; border-radius: 9px;
+      background: #fff; color: var(--ink); outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    input:focus, select:focus { border-color: #2b8b68; box-shadow: 0 0 0 3px rgba(43,139,104,.13); }
+    input:disabled, select:disabled { background: #f1f4f5; color: #85939c; cursor: not-allowed; }
+    .check-wrap {
+      display: flex; align-items: center; gap: 10px; min-height: 43px; padding: 8px 11px;
+      border: 1px solid #e7d7ad; border-radius: 9px; background: var(--amber); color: #614810;
+    }
+    .check-wrap input { accent-color: #9c7316; width: 17px; height: 17px; flex: 0 0 auto; margin: 0; }
+    .check-wrap label { margin: 0; font-size: 13px; font-weight: 650; line-height: 1.25; cursor: pointer; }
+    .hint { min-height: 18px; margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+    .breakdown {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 19px;
+      padding: 14px; border-radius: 12px; background: #f4f8f8;
+    }
+    .break-item { padding: 0 10px; border-right: 1px solid #dfe8e9; }
+    .break-item:first-child { padding-left: 2px; }
+    .break-item:last-child { border: 0; }
+    .break-label { display: block; color: var(--muted); font-size: 12px; }
+    .break-value { display: block; margin-top: 3px; color: var(--ink); font-size: 16px; font-weight: 700; }
+    .break-item.total .break-value { color: var(--green); font-size: 19px; }
+    .form-actions { display: flex; align-items: center; justify-content: flex-end; gap: 9px; margin-top: 17px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px;
+      padding: 0 17px; border: 1px solid transparent; border-radius: 9px; cursor: pointer; font-weight: 700;
+      transition: transform .12s, background .12s, border-color .12s;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--green); color: #fff; }
+    .btn-primary:hover { background: #176c50; }
+    .btn-secondary { background: #fff; border-color: var(--line); color: #3c5261; }
+    .btn-secondary:hover { background: #f4f7f8; }
+    .months-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 15px; margin: 31px 2px 14px; }
+    .months-heading h2 { font-size: 20px; }
+    .match-count { color: var(--muted); font-size: 13px; }
+    .month-list { display: grid; gap: 15px; }
+    .month-card { overflow: hidden; }
+    .month-head {
+      display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 15px 19px;
+      border-bottom: 1px solid #e5ecee; background: #fbfdfd;
+    }
+    .month-title { margin: 0; font-size: 17px; font-weight: 750; }
+    .month-meta { margin-left: 8px; color: var(--muted); font-size: 12px; font-weight: 450; }
+    .month-sum { color: var(--green); font-size: 17px; font-weight: 750; white-space: nowrap; }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 830px; }
+    th { padding: 10px 12px; color: #637582; background: #fff; font-size: 11px; font-weight: 700; text-align: left; white-space: nowrap; }
+    td { padding: 12px; border-top: 1px solid #edf1f2; color: #2c4150; font-size: 13px; vertical-align: middle; }
+    tbody tr:hover { background: #fbfdfc; }
+    th.money, td.money { text-align: right; white-space: nowrap; }
+    td.total-cell { color: var(--green); font-weight: 750; }
+    .date-cell { white-space: nowrap; font-weight: 650; }
+    .role-tag { display: inline-block; padding: 4px 8px; border-radius: 20px; background: #eef4f6; color: #3e5b6e; font-size: 11px; white-space: nowrap; }
+    .second-tag { display: inline-block; margin-top: 4px; color: #8b6713; font-size: 10px; white-space: nowrap; }
+    .edit-btn { min-height: 32px; padding: 0 10px; background: #fff; border: 1px solid #cbd8dd; border-radius: 7px; color: #24475a; cursor: pointer; font-size: 12px; font-weight: 650; }
+    .edit-btn:hover { background: var(--green-soft); border-color: #a8cfbd; }
+    .empty-state { padding: 45px 20px; border: 1px dashed #cbd8dd; border-radius: 14px; color: var(--muted); background: rgba(255,255,255,.65); text-align: center; }
+    .empty-mark { display: grid; place-items: center; width: 43px; height: 43px; margin: 0 auto 12px; border-radius: 13px; background: #e7f1ed; color: var(--green); font-size: 22px; font-weight: 700; }
+    .empty-state strong { display: block; margin-bottom: 3px; color: #30495a; font-size: 15px; }
+    .toast { position: fixed; right: 22px; bottom: 22px; z-index: 2; padding: 12px 16px; border-radius: 10px; background: var(--navy); color: white; box-shadow: var(--shadow); opacity: 0; transform: translateY(10px); pointer-events: none; transition: .2s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 21px; scroll-margin-top: 18px; }
+    .stat-card { position: relative; display: flex; align-items: center; gap: 14px; min-height: 105px; padding: 18px; overflow: hidden; border: 1px solid #e2e9ec; border-radius: 15px; background: var(--paper); box-shadow: var(--shadow); transition: transform .18s, box-shadow .18s; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(16,43,67,.11); }
+    .stat-card::before { position: absolute; inset: 0 auto 0 0; width: 3px; content: ""; background: #72aeca; }
+    .stat-card:nth-child(2)::before { background: #35a879; }
+    .stat-card:nth-child(3)::before { background: #d6aa46; }
+    .stat-icon { display: grid; place-items: center; width: 46px; height: 46px; flex: 0 0 46px; border-radius: 13px; font-size: 21px; font-weight: 750; }
+    .stat-icon.blue { color: #3578a2; background: #e6f1f8; }
+    .stat-icon.green { color: #1d805f; background: #e7f4ee; }
+    .stat-icon.gold { color: #916b0f; background: #fff3d6; }
+    .stat-label { display: block; color: var(--muted); font-size: 12px; font-weight: 650; }
+    .stat-value { display: block; margin-top: 3px; color: var(--ink); font-size: 21px; font-weight: 760; line-height: 1.2; }
+    .stat-note { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .row-actions { display: flex; align-items: center; gap: 6px; }
+    .delete-btn { min-height: 32px; padding: 0 10px; background: #fff; border: 1px solid #e5caca; border-radius: 7px; color: #a33d3d; cursor: pointer; font-size: 12px; font-weight: 650; }
+    .delete-btn:hover { background: #fff0f0; border-color: #d89c9c; }
+    .bottom-nav { display: none; }
+    .chart-card { margin-top: 14px; padding: 19px 21px 16px; border: 1px solid #e2e9ec; border-radius: 16px; background: var(--paper); box-shadow: var(--shadow); }
+    .chart-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 10px; }
+    .chart-title { margin: 0; color: var(--ink); font-size: 16px; font-weight: 750; }
+    .chart-caption { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .chart-period { padding: 6px 10px; border: 1px solid var(--line); border-radius: 99px; color: var(--muted); background: var(--bg); font-size: 11px; font-weight: 650; white-space: nowrap; }
+    .chart-canvas-wrap { position: relative; width: 100%; height: 245px; min-width: 0; }
+    .chart-canvas-wrap[hidden], .chart-fallback[hidden] { display: none; }
+    .chart-fallback { display: grid; gap: 11px; min-height: 200px; align-content: center; padding: 5px 0; }
+    .chart-row { display: grid; grid-template-columns: 88px minmax(30px, 1fr) 112px; align-items: center; gap: 12px; }
+    .chart-month { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .chart-track { height: 12px; overflow: hidden; border-radius: 99px; background: #edf2f3; }
+    .chart-fill { height: 100%; min-width: 2px; border-radius: inherit; background: linear-gradient(90deg, #2b9a6c, #77c9a0); }
+    .chart-amount { color: var(--ink); font-size: 12px; font-weight: 700; text-align: right; white-space: nowrap; }
+    .chart-empty { padding: 65px 10px; color: var(--muted); font-size: 13px; text-align: center; }
+    :root[data-theme="dark"] .form-card,
+    :root[data-theme="dark"] .month-card,
+    :root[data-theme="dark"] .stat-card { border-color: #2d414d; }
+    :root[data-theme="dark"] .chart-card { border-color: #2d414d; }
+    :root[data-theme="dark"] .field label,
+    :root[data-theme="dark"] .field-label { color: #c6d3da; }
+    :root[data-theme="dark"] input,
+    :root[data-theme="dark"] select { border-color: #415662; background-color: #111c24; color: var(--ink); }
+    :root[data-theme="dark"] input:disabled,
+    :root[data-theme="dark"] select:disabled { background: #202d36; color: #81919a; }
+    :root[data-theme="dark"] .check-wrap { border-color: #66582f; color: #f1d99c; }
+    :root[data-theme="dark"] .breakdown { background: #111d25; }
+    :root[data-theme="dark"] .break-item { border-color: #354650; }
+    :root[data-theme="dark"] .month-head { border-color: #2d414d; background: #1a2933; }
+    :root[data-theme="dark"] th { background: #17242e; color: #a8b8c1; }
+    :root[data-theme="dark"] td { border-color: #2a3a44; color: #d2dde2; }
+    :root[data-theme="dark"] tbody tr:hover { background: #1b2a34; }
+    :root[data-theme="dark"] .role-tag { background: #243943; color: #c3d8e0; }
+    :root[data-theme="dark"] .edit-btn,
+    :root[data-theme="dark"] .btn-secondary { border-color: #415662; background: #1b2a34; color: #d4e0e5; }
+    :root[data-theme="dark"] .edit-btn:hover,
+    :root[data-theme="dark"] .btn-secondary:hover { background: #263a44; }
+    :root[data-theme="dark"] .delete-btn { border-color: #704444; background: #2a2023; color: #ffaaaa; }
+    :root[data-theme="dark"] .delete-btn:hover { background: #42292d; }
+    :root[data-theme="dark"] .empty-state { border-color: #40545f; background: rgba(23,36,46,.65); }
+    :root[data-theme="dark"] .empty-state strong { color: #d8e3e8; }
+    :root[data-theme="dark"] .stat-icon.blue { color: #91c8e8; background: #203949; }
+    :root[data-theme="dark"] .stat-icon.green { color: #8fe0b7; background: #1c3b31; }
+    :root[data-theme="dark"] .stat-icon.gold { color: #f0d27d; background: #3b341f; }
+    :root[data-theme="dark"] .chart-track { background: #263640; }
+    :root[data-theme="dark"] .chart-fill { background: linear-gradient(90deg, #34a875, #72d3a4); }
+    :root[data-theme="dark"] .delete-btn { color: #ffb5b5; }
+    @media (max-width: 850px) {
+      .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .topbar-inner { min-height: 100px; }
+    }
+    @media (max-width: 650px) {
+      main { padding-bottom: 108px; }
+      .bottom-nav {
+        position: fixed; z-index: 5; inset: auto 0 0; display: grid; grid-template-columns: repeat(3, 1fr);
+        padding: 7px 10px calc(7px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line);
+        background: var(--paper); box-shadow: 0 -8px 24px rgba(16,43,67,.09);
+      }
+      .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 48px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; font-size: 10px; font-weight: 650; }
+      .nav-btn span:first-child { font-size: 19px; line-height: 1.1; }
+      .nav-btn.active { background: var(--green-soft); color: var(--green); }
+      .toast { bottom: 82px; }
+      .chart-card { padding: 15px 13px; }
+      .chart-canvas-wrap { height: 220px; }
+      .chart-row { grid-template-columns: 62px minmax(28px, 1fr) 88px; gap: 8px; }
+      .chart-month, .chart-amount { font-size: 10px; }
+    }
+    @media (max-width: 560px) {
+      .topbar-inner, main { width: min(100% - 24px, 1180px); }
+      .topbar-inner { align-items: flex-start; flex-direction: column; gap: 13px; padding: 18px 0; }
+      .header-actions { width: 100%; }
+      .total-box { width: auto; flex: 1; min-width: 0; display: flex; justify-content: space-between; align-items: center; text-align: left; padding: 9px 13px; }
+      .total-value { font-size: 19px; }
+      main { padding-top: 15px; }
+      .form-card { padding: 17px 14px; }
+      .section-head { margin-bottom: 15px; }
+      .fields { grid-template-columns: 1fr; gap: 10px; }
+      .hint { min-height: 0; }
+      .breakdown { grid-template-columns: repeat(2, 1fr); gap: 13px 8px; }
+      .break-item { padding: 0 7px; }
+      .break-item:nth-child(2) { border: 0; }
+      .break-item:nth-child(3) { padding-left: 2px; }
+      .form-actions { flex-wrap: wrap; }
+      .form-actions .btn { flex: 1; }
+      .month-head { padding: 13px 14px; }
+      .month-title { font-size: 15px; }
+      .month-sum { font-size: 15px; }
+      .month-meta { display: block; margin: 2px 0 0; }
+      .stats-grid { grid-template-columns: 1fr; gap: 9px; margin-bottom: 15px; }
+      .stat-card { min-height: 81px; padding: 13px 15px; }
+      .stat-icon { width: 42px; height: 42px; flex-basis: 42px; }
+      .stat-value { font-size: 19px; }
+      .theme-toggle { min-height: 42px; padding: 0 10px; font-size: 12px; }
+      .row-actions { flex-direction: column; align-items: stretch; }
+    }
+    .app-shell { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: 100vh; }
+    .sidebar { position: sticky; top: 0; display: flex; flex-direction: column; height: 100vh; padding: 23px 15px 16px; background: #102b43; color: #fff; }
+    .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 2px 8px 26px; color: #fff; text-decoration: none; }
+    .sidebar-brand .brand-mark { width: 42px; height: 42px; border-radius: 13px; background: #1d805f; font-size: 20px; }
+    .sidebar-brand strong, .sidebar-brand small { display: block; }
+    .sidebar-brand strong { font-size: 15px; letter-spacing: -.2px; }
+    .sidebar-brand small { margin-top: 1px; color: #aac0cc; font-size: 12px; }
+    .sidebar-label { padding: 0 12px 10px; color: #8199a7; font-size: 10px; font-weight: 750; letter-spacing: 1.3px; }
+    .side-nav { display: grid; gap: 6px; }
+    .side-nav-item { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 12px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: #c6d4dc; cursor: pointer; text-align: left; font-size: 13px; font-weight: 650; transition: .15s; }
+    .side-nav-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+    .side-nav-item.active { border-color: rgba(112,205,164,.18); background: rgba(48,150,109,.19); color: #a5e2c3; }
+    .side-icon { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 7px; background: rgba(255,255,255,.07); font-size: 16px; }
+    .side-nav-item.active .side-icon { background: rgba(85,193,140,.18); }
+    .sidebar-bottom { display: flex; align-items: center; gap: 8px; margin-top: auto; padding: 14px 10px 4px; border-top: 1px solid rgba(255,255,255,.1); color: #8ea5b2; font-size: 11px; }
+    .sidebar-dot { width: 7px; height: 7px; border-radius: 50%; background: #5dc493; }
+    .app-column { min-width: 0; }
+    .topbar { position: sticky; z-index: 4; top: 0; border-bottom: 1px solid var(--line); background: var(--paper); color: var(--ink); box-shadow: 0 4px 16px rgba(16,43,67,.035); }
+    .topbar-inner { width: auto; max-width: 1520px; min-height: 84px; margin: 0; padding: 14px clamp(18px, 3vw, 38px); }
+    .page-heading { min-width: 0; }
+    .mobile-home { display: none; place-items: center; width: 36px; height: 36px; flex: 0 0 36px; border: 0; border-radius: 11px; background: var(--green); color: #fff; cursor: pointer; font-size: 16px; font-weight: 800; }
+    .page-eyebrow { display: block; margin-bottom: 2px; color: var(--green); font-size: 9px; font-weight: 800; letter-spacing: 1.35px; }
+    .page-heading h1 { color: var(--ink); font-size: 22px; }
+    .page-subtitle { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+    .topbar .header-actions { flex-shrink: 0; }
+    .topbar .total-box { border-color: var(--line); background: var(--bg); text-align: left; }
+    .topbar .total-label { color: var(--muted); }
+    .topbar .total-value { color: var(--ink); font-size: 19px; }
+    .topbar .theme-toggle { border-color: var(--line); background: var(--paper); color: var(--ink); }
+    .topbar .theme-toggle:hover { background: var(--bg); }
+    main { width: auto; max-width: 1520px; margin: 0; padding: 28px clamp(18px, 3vw, 38px) 58px; }
+    .page { display: none; }
+    .page.active { display: block; animation: pageIn .2s ease-out; }
+    @keyframes pageIn { from { opacity: .45; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .page-section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 15px; margin: 2px 2px 18px; }
+    .page-section-head h2 { color: var(--ink); font-size: 21px; }
+    .page-section-head p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+    .page-section-head .match-count { padding: 7px 11px; border: 1px solid var(--line); border-radius: 99px; background: var(--paper); }
+    .month-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 13px; }
+    .month-card-grid > .empty-state { grid-column: 1 / -1; }
+    .month-card-button { display: flex; flex-direction: column; align-items: stretch; min-height: 139px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); color: var(--ink); box-shadow: var(--shadow); cursor: pointer; text-align: left; transition: .16s; }
+    .month-card-button:hover { transform: translateY(-2px); border-color: #8bbca6; box-shadow: 0 17px 34px rgba(16,43,67,.11); }
+    .month-card-button.selected { border-color: var(--green); box-shadow: 0 0 0 2px rgba(29,128,95,.12), var(--shadow); }
+    .month-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .month-card-icon { display: grid; place-items: center; width: 35px; height: 35px; border-radius: 10px; background: var(--green-soft); color: var(--green); font-size: 17px; }
+    .month-card-arrow { color: var(--muted); font-size: 18px; }
+    .month-card-arrow .ui-icon { width: 17px; height: 17px; }
+    .month-card-name { margin-top: 14px; font-size: 16px; font-weight: 750; }
+    .month-card-meta { margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .month-card-sum { margin-top: auto; padding-top: 13px; color: var(--green); font-size: 17px; font-weight: 780; }
+    .month-detail { margin-top: 20px; overflow: hidden; border: 1px solid var(--line); border-radius: 15px; background: var(--paper); box-shadow: var(--shadow); }
+    .month-detail[hidden] { display: none; }
+    .month-detail-head { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 17px 19px; border-bottom: 1px solid var(--line); }
+    .month-detail-head h2 { margin: 3px 0 0; color: var(--ink); font-size: 19px; }
+    .detail-eyebrow { color: var(--green); font-size: 9px; font-weight: 800; letter-spacing: 1.2px; }
+    .month-detail-head .section-hint { margin: 3px 0 0; }
+    .export-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .export-actions .btn { min-height: 38px; padding: 0 12px; font-size: 12px; }
+    .print-note { margin: 9px 18px 14px; color: var(--muted); font-size: 11px; }
+    #selectedMonthTable { min-width: 890px; }
+    #selectedMonthTotal td { border-top: 2px solid var(--line); background: var(--bg); font-weight: 750; }
+    .earnings-total { padding: 8px 13px; border-radius: 10px; background: var(--green-soft); color: var(--green); font-size: 17px; font-weight: 780; white-space: nowrap; }
+    .earnings-month-list { display: grid; gap: 9px; margin-top: 14px; }
+    .earnings-month-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 17px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
+    .earnings-month-name { color: var(--ink); font-size: 13px; font-weight: 700; }
+    .earnings-month-count { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; font-weight: 450; }
+    .earnings-month-sum { color: var(--green); font-size: 15px; font-weight: 760; white-space: nowrap; }
+    .modal-overlay { position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; padding: 22px; background: rgba(3, 10, 16, .72); backdrop-filter: blur(5px); animation: modalFadeIn .18s ease-out both; }
+    @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-open { overflow: hidden; }
+    .modal-overlay[hidden] { display: none !important; }
+    .modal-overlay .month-detail { display: flex; flex-direction: column; width: min(1120px, 100%); max-height: min(88vh, 900px); margin: 0; overflow: hidden; border-radius: 17px; }
+    .modal-overlay .month-detail-head { flex: 0 0 auto; }
+    .modal-overlay .table-scroll { min-height: 0; flex: 1 1 auto; overflow: auto; }
+    .modal-close { display: grid; place-items: center; width: 38px; height: 38px; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); cursor: pointer; font-size: 24px; line-height: 1; }
+    .modal-close:hover { border-color: #a5b7bf; background: var(--green-soft); }
+    .category-card { margin-top: 16px; }
+    .category-layout { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .category-chart-wrap { position: relative; width: 100%; max-width: 330px; height: 285px; min-width: 0; }
+    .category-chart-wrap[hidden], .category-empty[hidden] { display: none; }
+    .category-chart-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted); pointer-events: none; }
+    .category-chart-center strong { color: var(--ink); font-size: 26px; line-height: 1; }
+    .category-chart-center span { font-size: 10px; }
+    .category-pie-fallback { display: grid; place-items: center; width: min(260px, 100%); aspect-ratio: 1; margin: 8px auto; border-radius: 50%; }
+    .category-pie-fallback[hidden] { display: none; }
+    .category-pie-center { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 63%; aspect-ratio: 1; border: 1px solid var(--line); border-radius: 50%; background: var(--paper); color: var(--muted); }
+    .category-pie-center strong { color: var(--ink); font-size: 30px; line-height: 1.1; }
+    .category-pie-center span { margin-top: 4px; font-size: 11px; }
+    .category-empty { display: grid; place-items: center; min-height: 230px; padding: 20px; color: var(--muted); text-align: center; }
+    .category-table-scroll { width: 100%; overflow-x: auto; }
+    .category-table { min-width: 100%; }
+    .category-table th:first-child, .category-table td:first-child { text-align: left; }
+    .category-table td { font-size: 12px; }
+    .category-name-cell { display: flex; align-items: center; gap: 9px; min-width: 250px; }
+    .category-color-dot { width: 9px; height: 9px; flex: 0 0 9px; border-radius: 50%; }
+    .category-table tfoot td { border-top: 2px solid var(--line); background: var(--bg); font-weight: 750; }
+    .edit-btn, .delete-btn { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+    .edit-btn .ui-icon, .delete-btn .ui-icon { width: 14px; height: 14px; }
+    .empty-mark .ui-icon { width: 19px; height: 19px; }
+    .bottom-nav { display: none; }
+    :root[data-theme="dark"] .topbar { border-color: #2d414d; }
+    :root[data-theme="dark"] .topbar .total-box { border-color: #344752; background: #111d25; }
+    :root[data-theme="dark"] .topbar .theme-toggle { border-color: #344752; background: #17242e; color: var(--ink); }
+    :root[data-theme="dark"] .month-card-button,
+    :root[data-theme="dark"] .month-detail,
+    :root[data-theme="dark"] .earnings-month-item { border-color: #2d414d; }
+    :root[data-theme="dark"] .month-card-button:hover { border-color: #47735f; }
+    :root[data-theme="dark"] .month-card-button.selected { border-color: var(--green); }
+    :root[data-theme="dark"] #selectedMonthTotal td { border-color: #344752; background: #111d25; }
+    :root[data-theme="dark"] .category-table tfoot td { border-color: #344752; background: #111d25; }
+    @media (max-width: 760px) {
+      .app-shell { display: block; }
+      .sidebar { display: none; }
+      .mobile-home { display: grid; }
+      .topbar-inner { min-height: 74px; padding: 11px 16px; }
+      .page-heading h1 { font-size: 19px; }
+      .page-subtitle { font-size: 11px; }
+      main { padding: 18px 16px 104px; }
+      .bottom-nav { position: fixed; z-index: 8; inset: auto 0 0; display: grid; grid-template-columns: repeat(3, 1fr); padding: 7px 10px calc(7px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--paper); box-shadow: 0 -8px 24px rgba(16,43,67,.11); }
+      .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 51px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; font-size: 10px; font-weight: 650; }
+      .nav-btn.active { background: var(--green-soft); color: var(--green); }
+      .page.active { scroll-margin-top: 90px; }
+      .toast { bottom: 82px; }
+      .month-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+      .month-card-button { min-height: 128px; padding: 12px; }
+      .month-card-name { margin-top: 10px; font-size: 14px; }
+      .month-card-sum { font-size: 15px; }
+      .modal-overlay { padding: 10px; }
+      .modal-overlay .month-detail { max-height: 91vh; border-radius: 14px; }
+      .modal-overlay .month-detail-head { align-items: flex-start; gap: 8px; padding: 13px; }
+      .modal-overlay .export-actions { width: auto; flex-wrap: nowrap; gap: 5px; }
+      .modal-overlay .export-actions .btn { min-height: 34px; padding: 0 8px; font-size: 10px; }
+      .modal-close { width: 34px; height: 34px; flex: 0 0 34px; }
+      .category-layout { gap: 8px; }
+      .category-chart-wrap { height: 235px; max-width: 340px; margin: 0 auto; }
+      .category-table { min-width: 0; }
+      .category-name-cell { min-width: 0; }
+      .page-section-head { align-items: flex-start; }
+    }
+    @media (max-width: 560px) {
+      .topbar-inner { width: auto; align-items: center; flex-direction: row; gap: 10px; padding: 10px 12px; }
+      .header-actions { width: auto; gap: 6px; }
+      .topbar .total-box { display: block; width: auto; min-width: 0; padding: 7px 9px; }
+      .topbar .total-label { font-size: 9px; }
+      .topbar .total-value { margin-top: 0; font-size: 14px; }
+      .topbar .theme-toggle { width: 39px; min-height: 39px; padding: 0; }
+      #themeLabel { display: none; }
+      .page-heading h1 { font-size: 17px; }
+      .page-subtitle { max-width: 180px; font-size: 10px; }
+      .page-section-head h2 { font-size: 18px; }
+      .month-card-grid { grid-template-columns: 1fr 1fr; }
+      .month-card-meta { font-size: 10px; }
+      .month-card-sum { font-size: 13px; }
+      .chart-card { padding: 14px 12px; }
+      .page-section-head .match-count { font-size: 11px; white-space: nowrap; }
+    }
+    @media print {
+      @page { size: landscape; margin: 12mm; }
+      body, :root { background: #fff !important; color: #111 !important; }
+      .modal-open { overflow: visible !important; }
+      .sidebar, .topbar, .bottom-nav, .no-print, .toast, #monthCards { display: none !important; }
+      .app-shell { display: block !important; min-height: 0 !important; }
+      .app-column, main { display: block !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+      .page { display: none !important; }
+      #monthsPage.active { display: block !important; }
+      .modal-overlay { position: static !important; display: block !important; padding: 0 !important; background: #fff !important; backdrop-filter: none !important; }
+      #monthDetail, #monthDetail[hidden] { display: block !important; width: 100% !important; max-height: none !important; margin: 0 !important; overflow: visible !important; border: 0 !important; box-shadow: none !important; }
+      .month-detail-head { padding: 0 0 10px !important; border: 0 !important; }
+      .detail-eyebrow { color: #333 !important; }
+      .month-detail-head h2, .section-hint { color: #111 !important; }
+      .table-scroll { overflow: visible !important; }
+      #selectedMonthTable { width: 100% !important; min-width: 0 !important; }
+      #selectedMonthTable th, #selectedMonthTable td { padding: 7px !important; border: 1px solid #ccc !important; background: #fff !important; color: #111 !important; font-size: 9pt !important; }
+      #selectedMonthTable th:last-child, #selectedMonthTable td:last-child { display: none !important; }
+      .print-note { display: none !important; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <svg class="icon-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="tabler-shield-check" viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 4.5-3.2 7.7-8 9-4.8-1.3-8-4.5-8-9V7l8-4z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="tabler-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/></symbol>
+    <symbol id="tabler-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="tabler-calendar-plus" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16M12 14v5M9.5 16.5h5"/></symbol>
+    <symbol id="tabler-calendar-month" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16M8 15h.01M12 15h.01M16 15h.01M8 18h.01M12 18h.01"/></symbol>
+    <symbol id="tabler-chart-pie" viewBox="0 0 24 24"><path d="M12 3v9h9"/><path d="M20.5 14A8.5 8.5 0 1 1 10 3.5"/><path d="M15 3.5A8.5 8.5 0 0 1 20.5 9"/></symbol>
+    <symbol id="tabler-calendar-event" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/><rect x="8" y="14" width="3" height="3" rx=".5"/></symbol>
+    <symbol id="tabler-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 8.5c-.7-.6-1.7-.9-2.8-.9-1.5 0-2.7.8-2.7 1.9s1.1 1.7 2.7 2c1.6.3 2.7.9 2.7 2s-1.2 2-2.9 2c-1.1 0-2.1-.3-2.8-.9"/></symbol>
+    <symbol id="tabler-trophy" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4"/></symbol>
+    <symbol id="tabler-moon" viewBox="0 0 24 24"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13z"/></symbol>
+    <symbol id="tabler-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></symbol>
+    <symbol id="tabler-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="tabler-file-type-pdf" viewBox="0 0 24 24"><path d="M14 3v5h5M5 3h9l5 5v13H5z"/><path d="M8 16h1.5a1.5 1.5 0 0 0 0-3H8v5M13 18v-5h1a2.5 2.5 0 0 1 0 5h-1M18 18v-5h3M18 15h2"/></symbol>
+    <symbol id="tabler-file-spreadsheet" viewBox="0 0 24 24"><path d="M14 3v5h5M5 3h9l5 5v13H5z"/><path d="M8 13h8M8 16h8M11 12v7M15 12v7"/></symbol>
+    <symbol id="tabler-x" viewBox="0 0 24 24"><path d="m18 6-12 12M6 6l12 12"/></symbol>
+    <symbol id="tabler-pencil" viewBox="0 0 24 24"><path d="m4 20 4-.8L19 8.2a2.1 2.1 0 0 0-3-3L5 16.2 4 20z"/><path d="m14.5 6.5 3 3"/></symbol>
+    <symbol id="tabler-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 14h12l1-14M9 7V4h6v3"/></symbol>
+  </svg>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="sidebar-brand" href="#" data-open-page="home" aria-label="Ana sayfaya git">
+        <span class="brand-mark" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-shield-check"></use></svg></span>
+        <span><strong>Hakem Ücret</strong><small>Takibi</small></span>
+      </a>
+      <div class="sidebar-label">MENÜ</div>
+      <nav class="side-nav" aria-label="Ana menü">
+        <button type="button" class="side-nav-item" data-open-page="add"><span class="side-icon" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-calendar-plus"></use></svg></span><span>Maç Ekle</span></button>
+        <button type="button" class="side-nav-item" data-open-page="months"><span class="side-icon" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-calendar-month"></use></svg></span><span>Aylık Tablo</span></button>
+        <button type="button" class="side-nav-item" data-open-page="stats"><span class="side-icon" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-chart-pie"></use></svg></span><span>İstatistikler</span></button>
+      </nav>
+      <div class="sidebar-bottom"><span class="sidebar-dot"></span>Maç ve kazanç takibi</div>
+    </aside>
+
+    <div class="app-column">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <button class="mobile-home" type="button" data-open-page="home" aria-label="Hakem Ücret Takibi ana sayfa"><svg class="ui-icon"><use href="#tabler-home"></use></svg></button>
+          <div class="page-heading">
+            <span class="page-eyebrow" id="pageEyebrow">GENEL BAKIŞ</span>
+            <h1 id="pageTitle">Ana Sayfa</h1>
+            <p class="page-subtitle" id="pageSubtitle">Hakem ücretlerinizi ve maçlarınızı takip edin.</p>
+          </div>
+          <div class="header-actions">
+            <div class="total-box">
+              <span class="total-label">Genel toplam kazanç</span>
+              <span class="total-value" id="grandTotal">₺0,00</span>
+            </div>
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Koyu temaya geç">
+              <span class="theme-icon" id="themeIcon" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-moon"></use></svg></span><span id="themeLabel">Koyu tema</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main id="appMain">
+        <section id="homePage" class="page active" data-page="home">
+          <section id="summaryStats" class="stats-grid" aria-label="Özet istatistikler">
+            <article class="stat-card">
+              <span class="stat-icon blue" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-calendar-event"></use></svg></span>
+              <div><span class="stat-label">Bu ay yapılan maç</span><strong class="stat-value" id="statMonthCount">0 maç</strong><span class="stat-note" id="statMonthLabel"></span></div>
+            </article>
+            <article class="stat-card">
+              <span class="stat-icon green" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-coin"></use></svg></span>
+              <div><span class="stat-label">Ortalama maç başı kazanç</span><strong class="stat-value" id="statAverage">₺0,00</strong><span class="stat-note">Girilen tüm maçların ortalaması</span></div>
+            </article>
+            <article class="stat-card">
+              <span class="stat-icon gold" aria-hidden="true"><svg class="ui-icon"><use href="#tabler-trophy"></use></svg></span>
+              <div><span class="stat-label">En çok yönetilen lig türü</span><strong class="stat-value" id="statTopType">—</strong><span class="stat-note" id="statTopTypeShare">Henüz maç yok</span></div>
+            </article>
+          </section>
+        </section>
+
+        <section id="addPage" class="page" data-page="add">
+          <section id="matchCard" class="form-card" aria-labelledby="formTitle">
+      <div class="section-head">
+        <div>
+          <h2 id="formTitle">Maç ekle</h2>
+          <p class="section-hint">Maç bilgilerini ve görev ücretini girin.</p>
+        </div>
+      </div>
+
+      <form id="matchForm">
+        <div class="fields">
+          <div class="field">
+            <label for="matchDate">Maç tarihi</label>
+            <input id="matchDate" type="date" required>
+          </div>
+          <div class="field">
+            <label for="matchType">Maç türü</label>
+            <select id="matchType" required></select>
+          </div>
+          <div class="field">
+            <label for="role">Görev</label>
+            <select id="role" required>
+              <option value="referee">Hakem</option>
+              <option value="assistant">Yardımcı hakem</option>
+              <option value="fourth">4. hakem</option>
+            </select>
+          </div>
+          <div class="field">
+            <span class="field-label">Aynı gün ve aynı yerde</span>
+            <div class="check-wrap">
+              <input id="secondMatch" type="checkbox">
+              <label for="secondMatch">2. maç (yol ve harcırah 0 TL)</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="locationType">Görev yeri / harcırah</label>
+            <select id="locationType">
+              <option value="home">Ev sahibi / ikamet ilçesi (%25)</option>
+              <option value="away">Deplasman (%50)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="distanceBand">Yol mesafesi</label>
+            <select id="distanceBand">
+              <option value="0">Yol ücreti yok</option>
+              <option value="1">0–20 km · 460 TL</option>
+              <option value="2">21–50 km · 550 TL</option>
+              <option value="3">51–75 km · 650 TL</option>
+              <option value="4">76–100 km · 830 TL</option>
+              <option value="5">101–199 km · 1.382 TL</option>
+              <option value="6">200 km ve üzeri · 3.202 TL</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="travelFee">Yol ücreti (TL)</label>
+            <input id="travelFee" type="number" min="0" step="0.01" value="0">
+            <p class="hint">Kilometre aralığı seçildiğinde ücret gelir; tutarı değiştirebilirsiniz.</p>
+          </div>
+          <div class="field">
+            <label for="allowance">Harcırah (TL)</label>
+            <input id="allowance" type="number" min="0" step="0.01" value="0">
+            <p class="hint" id="allowanceHint">Maç ücretine göre hesaplanır; tutarı değiştirebilirsiniz.</p>
+          </div>
+        </div>
+
+        <div class="breakdown" aria-live="polite">
+          <div class="break-item"><span class="break-label">Maç ücreti</span><span class="break-value" id="previewMatch">₺0,00</span></div>
+          <div class="break-item"><span class="break-label">Yol ücreti</span><span class="break-value" id="previewTravel">₺0,00</span></div>
+          <div class="break-item"><span class="break-label">Harcırah</span><span class="break-value" id="previewAllowance">₺0,00</span></div>
+          <div class="break-item total"><span class="break-label">Bu maçın toplamı</span><span class="break-value" id="previewTotal">₺0,00</span></div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-secondary" id="cancelEdit" type="button" hidden>Vazgeç</button>
+          <button class="btn btn-primary" id="saveButton" type="submit"><svg class="ui-icon" aria-hidden="true"><use href="#tabler-plus"></use></svg> Maçı ekle</button>
+        </div>
+      </form>
+          </section>
+        </section>
+
+        <section id="monthsPage" class="page" data-page="months">
+          <div class="page-section-head">
+            <div><h2>Aylık Tablo</h2><p>Ay kartına tıklayarak maç tablosunu açın.</p></div>
+            <span class="match-count" id="matchCount">0 maç</span>
+          </div>
+          <div id="monthCards" class="month-card-grid"></div>
+          <div id="monthModal" class="modal-overlay" hidden>
+            <section id="monthDetail" class="month-detail" role="dialog" aria-modal="true" aria-labelledby="selectedMonthName">
+              <div class="month-detail-head">
+                <div><span class="detail-eyebrow">AYLIK MAÇ TABLOSU</span><h2 id="selectedMonthName"></h2><p id="selectedMonthCount" class="section-hint"></p></div>
+                <div class="export-actions no-print">
+                  <button class="btn btn-secondary" id="exportPdf" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#tabler-file-type-pdf"></use></svg> PDF olarak kaydet</button>
+                  <button class="btn btn-primary" id="exportExcel" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#tabler-file-spreadsheet"></use></svg> Excel indir</button>
+                  <button class="modal-close no-print" id="closeMonthModal" type="button" aria-label="Kapat"><svg class="ui-icon"><use href="#tabler-x"></use></svg></button>
+                </div>
+              </div>
+              <div class="table-scroll">
+                <table id="selectedMonthTable">
+                  <thead><tr><th>Tarih</th><th>Maç türü</th><th>Görev</th><th class="money">Maç ücreti</th><th class="money">Yol</th><th class="money">Harcırah</th><th class="money">Toplam</th><th>İşlem</th></tr></thead>
+                  <tbody id="selectedMonthRows"></tbody>
+                  <tfoot id="selectedMonthTotal"></tfoot>
+                </table>
+              </div>
+              <p class="print-note no-print">PDF için açılan yazdırma penceresinde “PDF olarak kaydet” seçeneğini kullanın.</p>
+            </section>
+          </div>
+        </section>
+
+        <section id="statsPage" class="page" data-page="stats">
+          <div class="page-section-head"><div><h2>İstatistikler</h2><p>Toplam kazançlar ve yönettiğiniz maç kategorileri.</p></div><span class="earnings-total" id="earningsPageTotal">₺0,00</span></div>
+          <article class="chart-card">
+            <div class="chart-head">
+              <div><h2 class="chart-title">Kazançlar</h2><p class="chart-caption">Ay bazında maç ücreti, yol ve harcırah toplamı</p></div>
+              <span id="chartPeriod" class="chart-period">Henüz veri yok</span>
+            </div>
+            <div id="chartCanvasWrap" class="chart-canvas-wrap" hidden><canvas id="earningsChart" aria-label="Aylık kazanç grafiği"></canvas></div>
+            <div id="chartFallback" class="chart-fallback" aria-label="Aylık kazanç grafiği"></div>
+          </article>
+          <div id="earningsMonthList" class="earnings-month-list"></div>
+          <article class="chart-card category-card">
+            <div class="chart-head">
+              <div><h2 class="chart-title">Çıkılan maç kategorileri</h2><p class="chart-caption">Yönettiğiniz maçların kategoriye göre dağılımı</p></div>
+              <span id="categoryTotalBadge" class="chart-period">0 maç</span>
+            </div>
+            <div class="category-layout">
+              <div id="categoryChartWrap" class="category-chart-wrap" hidden><canvas id="categoryChart" aria-label="Maç kategorilerinin yüzdelik dağılımı"></canvas><div class="category-chart-center" aria-hidden="true"><strong id="categoryChartCount">0</strong><span>maç</span></div></div>
+              <div id="categoryPieFallback" class="category-pie-fallback" hidden><div class="category-pie-center"><strong id="categoryPieCount">0</strong><span>maç</span></div></div>
+              <div id="categoryEmpty" class="category-empty" hidden>Henüz maç kategorisi verisi yok.</div>
+              <div class="category-table-scroll">
+                <table class="category-table">
+                  <thead><tr><th>Maç Kategorisi</th><th class="money">Adet</th><th class="money">%</th></tr></thead>
+                  <tbody id="categoryRows"></tbody>
+                  <tfoot id="categoryFooter"></tfoot>
+                </table>
+              </div>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+  <nav class="bottom-nav" aria-label="Sayfa gezintisi">
+    <button class="nav-btn" type="button" data-open-page="add"><svg class="ui-icon" aria-hidden="true"><use href="#tabler-calendar-plus"></use></svg><span>Maç Ekle</span></button>
+    <button class="nav-btn" type="button" data-open-page="months"><svg class="ui-icon" aria-hidden="true"><use href="#tabler-calendar-month"></use></svg><span>Aylık Tablo</span></button>
+    <button class="nav-btn" type="button" data-open-page="stats"><svg class="ui-icon" aria-hidden="true"><use href="#tabler-chart-pie"></use></svg><span>İstatistikler</span></button>
+  </nav>
+  <div id="toast" class="toast" role="status"></div>
+
+  <script async src="https://cdn.jsdelivr.net/npm/chart.js@4.6.1/dist/chart.umd.min.js" onload="window.refreshCharts && window.refreshCharts()"></script>
+  <script async src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script async src="https://cdn.jsdelivr.net/npm/motion@14.9.0/dist/motion.js" onload="window.runMonthModalAnimation && window.runMonthModalAnimation()"></script>
+  <script>
+    (() => {
+      const STORAGE_KEY = 'hakem-ucret-takibi-v1';
+      const THEME_KEY = 'hakem-ucret-temasi-v1';
+      const roles = { referee: 'Hakem', assistant: 'Yardımcı hakem', fourth: '4. hakem' };
+      const types = [
+        { id: 'paf', label: 'PAF U19', fees: { referee: 2200, assistant: 1300, fourth: 1040 }, allowance: true },
+        { id: 'women', label: 'Kadın SL / Futsal / Plaj', fees: { referee: 1620, assistant: 970, fourth: 810 }, allowance: true },
+        { id: 'league', label: 'SAL / 1K / 2K / Kadınlar 1.-2.-3. Ligi', fees: { referee: 1300, assistant: 780, fourth: 650 }, allowance: true },
+        { id: 'youth', label: 'U15 / U16 / U17 / U18 / U19 / İşitme Engelliler', fees: { referee: 1165, assistant: 710, fourth: 585 }, allowance: true },
+        { id: 'u10', label: 'U10 / U11 / U12 / U13 / U14', fees: { referee: 1040, assistant: 650, fourth: 520 }, allowance: true },
+        { id: 'special', label: 'Futsal İl / Plaj İl / Halı Saha / Özel Turnuvalar', fees: { referee: 650, assistant: 450, fourth: 0 }, allowance: false }
+      ];
+      const travelRates = { 1: 460, 2: 550, 3: 650, 4: 830, 5: 1382, 6: 3202 };
+      const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+      const $ = (id) => document.getElementById(id);
+      const form = $('matchForm');
+      const dateInput = $('matchDate');
+      const typeInput = $('matchType');
+      const roleInput = $('role');
+      const secondInput = $('secondMatch');
+      const locationInput = $('locationType');
+      const distanceInput = $('distanceBand');
+      const travelInput = $('travelFee');
+      const allowanceInput = $('allowance');
+      let matches = loadMatches();
+      let editingId = null;
+      let toastTimer;
+      let earningsChart = null;
+      let categoryChart = null;
+      let modalAnimation = null;
+      let currentPage = 'home';
+      let selectedMonthKey = null;
+
+      for (const type of types) {
+        const option = document.createElement('option');
+        option.value = type.id;
+        option.textContent = type.label;
+        typeInput.append(option);
+      }
+
+      function loadMatches() {
+        try {
+          const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+          return Array.isArray(value) ? value.filter(item => item && item.id && item.date && item.typeId && item.role) : [];
+        } catch { return []; }
+      }
+      function saveMatches() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(matches)); }
+        catch { showToast('Maçlar tarayıcıya kaydedilemedi.'); }
+      }
+      function currentType() { return types.find(type => type.id === typeInput.value) || types[0]; }
+      function roundMoney(value) { return Math.round((Number(value) + Number.EPSILON) * 100) / 100; }
+      function numberValue(input) { const n = Number(input.value); return Number.isFinite(n) && n >= 0 ? roundMoney(n) : 0; }
+      function money(value) {
+        return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(roundMoney(value || 0));
+      }
+      function baseFee() { return currentType().fees[roleInput.value] || 0; }
+      function allowanceDefault() {
+        const type = currentType();
+        if (!type.allowance || secondInput.checked) return 0;
+        return roundMoney(baseFee() * (locationInput.value === 'away' ? 0.5 : 0.25));
+      }
+      function calculatedTravel() {
+        if (secondInput.checked) return 0;
+        return numberValue(travelInput);
+      }
+      function calculatedAllowance() {
+        if (secondInput.checked || !currentType().allowance) return 0;
+        return numberValue(allowanceInput);
+      }
+      function refreshPreview() {
+        const fee = baseFee();
+        const travel = calculatedTravel();
+        const allowance = calculatedAllowance();
+        $('previewMatch').textContent = money(fee);
+        $('previewTravel').textContent = money(travel);
+        $('previewAllowance').textContent = money(allowance);
+        $('previewTotal').textContent = money(fee + travel + allowance);
+      }
+      function refreshControls(recomputeAllowance = false) {
+        const special = !currentType().allowance;
+        const locked = secondInput.checked;
+        const disableExpenses = locked;
+        locationInput.disabled = disableExpenses || special;
+        distanceInput.disabled = disableExpenses;
+        travelInput.disabled = disableExpenses;
+        allowanceInput.disabled = disableExpenses || special;
+        if (recomputeAllowance && !locked) allowanceInput.value = String(allowanceDefault());
+        if (locked) {
+          travelInput.value = '0';
+          allowanceInput.value = '0';
+        } else if (special) {
+          allowanceInput.value = '0';
+          $('allowanceHint').textContent = 'Bu maç türü için tabloda harcırah belirtilmemiş.';
+        } else {
+          $('allowanceHint').textContent = 'Maç ücretine göre hesaplanır; tutarı değiştirebilirsiniz.';
+        }
+        if (locked) $('allowanceHint').textContent = '2. maçta harcırah ve yol ücreti 0 TL olur.';
+        refreshPreview();
+      }
+      function parseDateParts(date) {
+        const [year, month, day] = date.split('-').map(Number);
+        return { year, month, day };
+      }
+      function displayDate(date) {
+        const { year, month, day } = parseDateParts(date);
+        return `${String(day).padStart(2, '0')}.${String(month).padStart(2, '0')}.${year}`;
+      }
+      function monthKey(date) {
+        const { year, month } = parseDateParts(date);
+        return `${year}-${String(month).padStart(2, '0')}`;
+      }
+      function makeCell(row, text, className = '') {
+        const cell = document.createElement('td');
+        if (className) cell.className = className;
+        cell.textContent = text;
+        row.append(cell);
+        return cell;
+      }
+      function iconMarkup(name) { return `<svg class="ui-icon" aria-hidden="true"><use href="#tabler-${name}"></use></svg>`; }
+      function monthlyChartPoints() {
+        const totals = new Map();
+        for (const match of matches) totals.set(monthKey(match.date), (totals.get(monthKey(match.date)) || 0) + match.total);
+        return [...totals.entries()].sort(([a], [b]) => a.localeCompare(b)).slice(-6).map(([key, total]) => {
+          const [year, month] = key.split('-').map(Number);
+          return { key, label: `${monthNames[month - 1].slice(0, 3)} ${year}`, total: roundMoney(total) };
+        });
+      }
+      function updateEarningsChart() {
+        const points = monthlyChartPoints();
+        const fallback = $('chartFallback');
+        const canvasWrap = $('chartCanvasWrap');
+        const hasChartJs = typeof window.Chart === 'function';
+        $('chartPeriod').textContent = points.length ? `Son ${points.length} kayıtlı ay` : 'Henüz veri yok';
+        fallback.replaceChildren();
+        if (!points.length) {
+          const empty = document.createElement('div'); empty.className = 'chart-empty';
+          empty.textContent = 'Aylık kazanç grafiğini görmek için maç ekleyin.';
+          fallback.append(empty);
+          fallback.hidden = false;
+          canvasWrap.hidden = true;
+          if (earningsChart) { earningsChart.destroy(); earningsChart = null; }
+          return;
+        }
+        const max = Math.max(...points.map(point => point.total), 0);
+        for (const point of points) {
+          const row = document.createElement('div'); row.className = 'chart-row';
+          const label = document.createElement('span'); label.className = 'chart-month'; label.textContent = point.label;
+          const track = document.createElement('div'); track.className = 'chart-track';
+          const fill = document.createElement('div'); fill.className = 'chart-fill';
+          fill.style.width = `${max ? Math.max(2, point.total / max * 100) : 0}%`;
+          track.append(fill);
+          const amount = document.createElement('span'); amount.className = 'chart-amount'; amount.textContent = money(point.total);
+          row.append(label, track, amount); fallback.append(row);
+        }
+        if (currentPage !== 'stats') {
+          fallback.hidden = false;
+          canvasWrap.hidden = true;
+          return;
+        }
+        if (!hasChartJs) {
+          fallback.hidden = false;
+          canvasWrap.hidden = true;
+          return;
+        }
+        fallback.hidden = true;
+        canvasWrap.hidden = false;
+        const dark = document.documentElement.dataset.theme === 'dark';
+        const tickColor = dark ? '#a1b2bd' : '#70818d';
+        const gridColor = dark ? 'rgba(205,225,235,.10)' : 'rgba(37,65,82,.09)';
+        const barColor = dark ? 'rgba(82,183,136,.82)' : 'rgba(29,128,95,.78)';
+        const compact = new Intl.NumberFormat('tr-TR', { notation: 'compact', maximumFractionDigits: 1 });
+        const chartData = {
+          labels: points.map(point => point.label),
+          datasets: [{
+            label: 'Toplam kazanç',
+            data: points.map(point => point.total),
+            backgroundColor: points.map((_, index) => index === points.length - 1 ? (dark ? '#69c99c' : '#1d805f') : barColor),
+            borderRadius: 7,
+            borderSkipped: false,
+            barThickness: 19,
+            maxBarThickness: 24
+          }]
+        };
+        const chartOptions = {
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: context => ` ${money(context.raw)}` } }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              grid: { color: gridColor, drawBorder: false },
+              ticks: { color: tickColor, font: { family: 'Segoe UI, Arial, sans-serif', size: 11 }, callback: value => compact.format(value) }
+            },
+            y: {
+              grid: { display: false, drawBorder: false },
+              ticks: { color: tickColor, font: { family: 'Segoe UI, Arial, sans-serif', size: 11 } }
+            }
+          }
+        };
+        if (!earningsChart) {
+          earningsChart = new window.Chart($('earningsChart').getContext('2d'), { type: 'bar', data: chartData, options: chartOptions });
+        } else {
+          earningsChart.data = chartData;
+          earningsChart.options = chartOptions;
+          earningsChart.update('none');
+        }
+      }
+      function updateCategoryChart() {
+        const palette = ['#2d9a70', '#508db7', '#d4a943', '#a47ac4', '#df7c69', '#5b9d98'];
+        const counts = new Map();
+        for (const match of matches) counts.set(match.typeId, (counts.get(match.typeId) || 0) + 1);
+        const entries = types.map(type => ({ type, count: counts.get(type.id) || 0 })).filter(item => item.count > 0).sort((a, b) => b.count - a.count);
+        const total = matches.length;
+        $('categoryTotalBadge').textContent = `${total} maç`;
+        const rows = $('categoryRows'); rows.replaceChildren();
+        const canvasWrap = $('categoryChartWrap');
+        const fallback = $('categoryPieFallback');
+        const empty = $('categoryEmpty');
+        if (!total) {
+          canvasWrap.hidden = true; fallback.hidden = true; empty.hidden = false;
+          $('categoryFooter').replaceChildren();
+          if (categoryChart) { categoryChart.destroy(); categoryChart = null; }
+          return;
+        }
+        empty.hidden = true;
+        const segments = [];
+        let degree = 0;
+        entries.forEach((entry, index) => {
+          const color = palette[index % palette.length];
+          const next = degree + entry.count / total * 360;
+          segments.push(`${color} ${degree}deg ${next}deg`);
+          degree = next;
+          const row = document.createElement('tr');
+          const categoryCell = document.createElement('td');
+          const categoryName = document.createElement('div'); categoryName.className = 'category-name-cell';
+          const dot = document.createElement('span'); dot.className = 'category-color-dot'; dot.style.backgroundColor = color;
+          const label = document.createElement('span'); label.textContent = entry.type.label;
+          categoryName.append(dot, label); categoryCell.append(categoryName); row.append(categoryCell);
+          makeCell(row, String(entry.count), 'money');
+          makeCell(row, `${Math.round(entry.count / total * 100)}%`, 'money');
+          rows.append(row);
+        });
+        const totalRow = document.createElement('tr');
+        const totalLabel = document.createElement('td'); totalLabel.textContent = 'Toplam'; totalRow.append(totalLabel);
+        makeCell(totalRow, String(total), 'money'); makeCell(totalRow, '100%', 'money');
+        const foot = $('categoryFooter'); foot.replaceChildren(totalRow);
+        $('categoryPieCount').textContent = String(total);
+        $('categoryChartCount').textContent = String(total);
+        fallback.style.background = `conic-gradient(${segments.join(', ')})`;
+        if (typeof window.Chart !== 'function' || currentPage !== 'stats') {
+          canvasWrap.hidden = true; fallback.hidden = false;
+          return;
+        }
+        fallback.hidden = true; canvasWrap.hidden = false;
+        const dark = document.documentElement.dataset.theme === 'dark';
+        const chartData = {
+          labels: entries.map(entry => entry.type.label),
+          datasets: [{
+            data: entries.map(entry => entry.count),
+            backgroundColor: entries.map((_, index) => palette[index % palette.length]),
+            borderColor: dark ? '#17242e' : '#ffffff',
+            borderWidth: 3,
+            hoverOffset: 7
+          }]
+        };
+        const chartOptions = {
+          responsive: true, maintainAspectRatio: false, cutout: '67%',
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: context => ` ${context.label}: ${context.raw} maç · ${Math.round(context.raw / total * 100)}%` } }
+          }
+        };
+        if (!categoryChart) categoryChart = new window.Chart($('categoryChart').getContext('2d'), { type: 'doughnut', data: chartData, options: chartOptions });
+        else { categoryChart.data = chartData; categoryChart.options = chartOptions; categoryChart.update('none'); }
+      }
+      function getMonthGroups() {
+        const groups = new Map();
+        for (const match of matches) {
+          const key = monthKey(match.date);
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(match);
+        }
+        for (const list of groups.values()) list.sort((a, b) => a.date.localeCompare(b.date));
+        return groups;
+      }
+      function monthNameFor(key) {
+        const [year, month] = key.split('-').map(Number);
+        return `${year} ${monthNames[month - 1]}`;
+      }
+      function renderMonthCards(groups) {
+        const cards = $('monthCards');
+        cards.replaceChildren();
+        const sortedMonths = [...groups.keys()].sort((a, b) => b.localeCompare(a));
+        if (!sortedMonths.length) {
+          const empty = document.createElement('div'); empty.className = 'empty-state';
+          const mark = document.createElement('div'); mark.className = 'empty-mark'; mark.innerHTML = iconMarkup('plus');
+          const strong = document.createElement('strong'); strong.textContent = 'Henüz aylık tablo yok';
+          const note = document.createElement('span'); note.textContent = 'Maç ekledikçe ay kartları burada görünecek.';
+          empty.append(mark, strong, note); cards.append(empty); return;
+        }
+        for (const key of sortedMonths) {
+          const list = groups.get(key);
+          const sum = list.reduce((total, item) => total + item.total, 0);
+          const card = document.createElement('button');
+          card.type = 'button'; card.className = `month-card-button${key === selectedMonthKey ? ' selected' : ''}`; card.setAttribute('aria-label', `${monthNameFor(key)} tablosunu aç`);
+          const top = document.createElement('span'); top.className = 'month-card-top';
+          const icon = document.createElement('span'); icon.className = 'month-card-icon'; icon.innerHTML = iconMarkup('calendar-month');
+          const arrow = document.createElement('span'); arrow.className = 'month-card-arrow'; arrow.innerHTML = iconMarkup('chevron-right');
+          top.append(icon, arrow);
+          const name = document.createElement('span'); name.className = 'month-card-name'; name.textContent = monthNameFor(key);
+          const meta = document.createElement('span'); meta.className = 'month-card-meta'; meta.textContent = `${list.length} maç`;
+          const total = document.createElement('span'); total.className = 'month-card-sum'; total.textContent = money(sum);
+          card.append(top, name, meta, total);
+          card.addEventListener('click', () => {
+            selectedMonthKey = key;
+            document.querySelectorAll('.month-card-button').forEach(item => item.classList.toggle('selected', item === card));
+            renderMonthDetail(groups);
+            $('monthModal').hidden = false;
+            document.body.classList.add('modal-open');
+            showPage('months');
+            animateMonthModalIn();
+            $('closeMonthModal').focus();
+            $('closeMonthModal').focus();
+          });
+          cards.append(card);
+        }
+      }
+      function renderMonthDetail(groups) {
+        const modal = $('monthModal');
+        const list = selectedMonthKey ? groups.get(selectedMonthKey) : null;
+        if (!list || !list.length) {
+          selectedMonthKey = null;
+          modal.hidden = true;
+          document.body.classList.remove('modal-open');
+          return;
+        }
+        $('selectedMonthName').textContent = monthNameFor(selectedMonthKey);
+        $('selectedMonthCount').textContent = `${list.length} maç · Aylık toplam ${money(list.reduce((sum, item) => sum + item.total, 0))}`;
+        const rows = $('selectedMonthRows'); rows.replaceChildren();
+        for (const match of list) {
+          const row = document.createElement('tr');
+          makeCell(row, displayDate(match.date), 'date-cell');
+          makeCell(row, (types.find(type => type.id === match.typeId) || {}).label || '');
+          const roleCell = document.createElement('td');
+          const roleTag = document.createElement('span'); roleTag.className = 'role-tag'; roleTag.textContent = roles[match.role] || match.role;
+          roleCell.append(roleTag);
+          if (match.second) { const secondTag = document.createElement('span'); secondTag.className = 'second-tag'; secondTag.textContent = '2. maç'; roleCell.append(document.createElement('br'), secondTag); }
+          row.append(roleCell);
+          makeCell(row, money(match.matchFee), 'money');
+          makeCell(row, money(match.travelFee), 'money');
+          makeCell(row, money(match.allowance), 'money');
+          makeCell(row, money(match.total), 'money total-cell');
+          const actionCell = document.createElement('td');
+          const actions = document.createElement('div'); actions.className = 'row-actions no-print';
+          const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'edit-btn'; edit.innerHTML = `${iconMarkup('pencil')} Düzenle`;
+          edit.addEventListener('click', () => beginEdit(match));
+          const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'delete-btn'; remove.innerHTML = `${iconMarkup('trash')} Sil`;
+          remove.addEventListener('click', () => deleteMatch(match));
+          actions.append(edit, remove); actionCell.append(actions); row.append(actionCell);
+          rows.append(row);
+        }
+        const totals = list.reduce((sum, item) => ({ fee: sum.fee + item.matchFee, travel: sum.travel + item.travelFee, allowance: sum.allowance + item.allowance, total: sum.total + item.total }), { fee: 0, travel: 0, allowance: 0, total: 0 });
+        const foot = $('selectedMonthTotal'); foot.replaceChildren();
+        const totalRow = document.createElement('tr');
+        const label = document.createElement('td'); label.colSpan = 3; label.textContent = 'AYLIK TOPLAM'; totalRow.append(label);
+        makeCell(totalRow, money(totals.fee), 'money');
+        makeCell(totalRow, money(totals.travel), 'money');
+        makeCell(totalRow, money(totals.allowance), 'money');
+        makeCell(totalRow, money(totals.total), 'money total-cell');
+        totalRow.append(document.createElement('td')); foot.append(totalRow);
+      }
+      function renderEarningsMonthList(groups) {
+        const container = $('earningsMonthList'); container.replaceChildren();
+        const sortedMonths = [...groups.keys()].sort((a, b) => b.localeCompare(a));
+        if (!sortedMonths.length) {
+          const empty = document.createElement('div'); empty.className = 'empty-state';
+          const strong = document.createElement('strong'); strong.textContent = 'Henüz kazanç kaydı yok';
+          const note = document.createElement('span'); note.textContent = 'Maç ekledikçe aylık kazançlar burada listelenir.';
+          empty.append(strong, note); container.append(empty); return;
+        }
+        for (const key of sortedMonths) {
+          const list = groups.get(key);
+          const item = document.createElement('article'); item.className = 'earnings-month-item';
+          const text = document.createElement('div');
+          const name = document.createElement('span'); name.className = 'earnings-month-name'; name.textContent = monthNameFor(key);
+          const count = document.createElement('span'); count.className = 'earnings-month-count'; count.textContent = `${list.length} maç`;
+          text.append(name, count);
+          const sum = document.createElement('span'); sum.className = 'earnings-month-sum'; sum.textContent = money(list.reduce((total, match) => total + match.total, 0));
+          item.append(text, sum); container.append(item);
+        }
+      }
+      function render() {
+        const groups = getMonthGroups();
+        const grand = matches.reduce((sum, item) => sum + item.total, 0);
+        $('grandTotal').textContent = money(grand);
+        $('earningsPageTotal').textContent = money(grand);
+        $('matchCount').textContent = `${matches.length} maç`;
+        const now = new Date();
+        const thisMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const thisMonthCount = matches.filter(item => monthKey(item.date) === thisMonthKey).length;
+        $('statMonthCount').textContent = `${thisMonthCount} maç`;
+        $('statMonthLabel').textContent = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+        $('statAverage').textContent = money(matches.length ? grand / matches.length : 0);
+        if (matches.length) {
+          const counts = new Map();
+          for (const item of matches) counts.set(item.typeId, (counts.get(item.typeId) || 0) + 1);
+          const topType = types.reduce((best, type) => (counts.get(type.id) || 0) > (counts.get(best.id) || 0) ? type : best, types[0]);
+          const topCount = counts.get(topType.id) || 0;
+          $('statTopType').textContent = topType.label;
+          $('statTopTypeShare').textContent = `${Math.round(topCount / matches.length * 100)}% · ${topCount} maç`;
+        } else {
+          $('statTopType').textContent = '—';
+          $('statTopTypeShare').textContent = 'Henüz maç yok';
+        }
+        renderMonthCards(groups);
+        renderMonthDetail(groups);
+        renderEarningsMonthList(groups);
+        updateEarningsChart();
+        updateCategoryChart();
+      }
+      function showToast(message) {
+        const toast = $('toast'); toast.textContent = message; toast.classList.add('show');
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+      }
+      function deleteMatch(match) {
+        const typeName = (types.find(type => type.id === match.typeId) || {}).label || 'maç';
+        if (!window.confirm(`${displayDate(match.date)} tarihli ${typeName} maçını silmek istiyor musunuz?`)) return;
+        matches = matches.filter(item => item.id !== match.id);
+        if (editingId === match.id) resetForm();
+        saveMatches(); render(); showToast('Maç silindi.');
+      }
+      function showPage(page) {
+        const pages = {
+          home: ['Ana Sayfa', 'GENEL BAKIŞ', 'Hakem ücretlerinizi ve maçlarınızı takip edin.'],
+          add: ['Maç Ekle', 'MAÇ KAYDI', 'Yeni maç bilgilerini ve ücretlerini girin.'],
+          months: ['Aylık Tablo', 'MAÇ TABLOLARI', 'Aylara göre maçlarınızı görüntüleyin ve dışa aktarın.'],
+          stats: ['İstatistikler', 'İSTATİSTİKLER', 'Kazançlarınızı ve yönettiğiniz maç kategorilerini inceleyin.']
+        };
+        if (!pages[page]) page = 'home';
+        currentPage = page;
+        document.querySelectorAll('.page').forEach(section => section.classList.toggle('active', section.dataset.page === page));
+        document.querySelectorAll('.side-nav-item, .nav-btn').forEach(button => {
+          const active = button.dataset.openPage === page;
+          button.classList.toggle('active', active);
+          if (active) button.setAttribute('aria-current', 'page'); else button.removeAttribute('aria-current');
+        });
+        $('pageTitle').textContent = pages[page][0];
+        $('pageEyebrow').textContent = pages[page][1];
+        $('pageSubtitle').textContent = pages[page][2];
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (page === 'stats') {
+          updateEarningsChart();
+          updateCategoryChart();
+          requestAnimationFrame(() => {
+            if (earningsChart) earningsChart.resize();
+            if (categoryChart) categoryChart.resize();
+          });
+        }
+      }
+      function downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a'); link.href = url; link.download = filename;
+        document.body.append(link); link.click(); link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+      function exportSelectedMonthExcel() {
+        if (!selectedMonthKey) return;
+        const list = (getMonthGroups().get(selectedMonthKey) || []).slice().sort((a, b) => a.date.localeCompare(b.date));
+        if (!list.length) return;
+        const totals = list.reduce((sum, match) => ({ fee: sum.fee + match.matchFee, travel: sum.travel + match.travelFee, allowance: sum.allowance + match.allowance, total: sum.total + match.total }), { fee: 0, travel: 0, allowance: 0, total: 0 });
+        const headers = ['Tarih', 'Maç türü', 'Görev', 'Maç ücreti (TL)', 'Yol ücreti (TL)', 'Harcırah (TL)', 'Toplam (TL)', '2. maç'];
+        const dataRows = list.map(match => [
+          displayDate(match.date),
+          (types.find(type => type.id === match.typeId) || {}).label || '',
+          roles[match.role] || match.role,
+          match.matchFee,
+          match.travelFee,
+          match.allowance,
+          match.total,
+          match.second ? 'Evet' : 'Hayır'
+        ]);
+        const tableRows = [[monthNameFor(selectedMonthKey)], headers, ...dataRows, [], ['Aylık toplam', '', '', totals.fee, totals.travel, totals.allowance, totals.total, '']];
+        const filename = `Hakem-Aylik-Tablo-${selectedMonthKey}`;
+        if (window.XLSX && window.XLSX.utils) {
+          const worksheet = window.XLSX.utils.aoa_to_sheet(tableRows);
+          worksheet['!cols'] = [{ wch: 15 }, { wch: 42 }, { wch: 20 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 12 }];
+          const workbook = window.XLSX.utils.book_new();
+          window.XLSX.utils.book_append_sheet(workbook, worksheet, 'Maçlar');
+          window.XLSX.writeFile(workbook, `${filename}.xlsx`);
+          showToast('Excel dosyası indirildi.');
+          return;
+        }
+        const csv = '\uFEFF' + tableRows.map(row => row.map(value => `"${String(value ?? '').replaceAll('"', '""')}"`).join(';')).join('\r\n');
+        downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `${filename}.csv`);
+        showToast('Excel modülü yüklenemedi; Excel uyumlu CSV indirildi.');
+      }
+      function exportSelectedMonthPdf() {
+        if (!selectedMonthKey) return;
+        showToast('Yazdırma penceresinde “PDF olarak kaydet” seçin.');
+        window.print();
+      }
+      function closeMonthModal() {
+        stopModalAnimation();
+        $('monthModal').hidden = true;
+        document.body.classList.remove('modal-open');
+      }
+      function stopModalAnimation() {
+        if (modalAnimation && typeof modalAnimation.stop === 'function') modalAnimation.stop();
+        else if (modalAnimation && typeof modalAnimation.cancel === 'function') modalAnimation.cancel();
+        modalAnimation = null;
+      }
+      function animateMonthModalIn() {
+        const panel = $('monthDetail');
+        if ($('monthModal').hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        stopModalAnimation();
+        if (window.Motion && typeof window.Motion.animate === 'function') {
+          modalAnimation = window.Motion.animate(panel, { y: [52, 0], opacity: [0, 1], scale: [.985, 1] }, { type: 'spring', stiffness: 430, damping: 34, bounce: .12 });
+        } else if (typeof panel.animate === 'function') {
+          modalAnimation = panel.animate([
+            { transform: 'translateY(52px) scale(.985)', opacity: 0 },
+            { transform: 'translateY(0) scale(1)', opacity: 1 }
+          ], { duration: 380, easing: 'cubic-bezier(.2,.8,.2,1)' });
+        }
+      }
+      function setTheme(theme) {
+        const dark = theme === 'dark';
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        $('themeIcon').innerHTML = iconMarkup(dark ? 'sun' : 'moon');
+        $('themeLabel').textContent = dark ? 'Açık tema' : 'Koyu tema';
+        $('themeToggle').setAttribute('aria-label', dark ? 'Açık temaya geç' : 'Koyu temaya geç');
+        try { localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light'); } catch { /* Tema bu oturumda uygulanır. */ }
+        if (typeof updateEarningsChart === 'function') updateEarningsChart();
+        if (typeof updateCategoryChart === 'function') updateCategoryChart();
+      }
+      function resetForm() {
+        editingId = null;
+        form.reset();
+        const today = new Date();
+        dateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        typeInput.value = types[0].id;
+        roleInput.value = 'referee';
+        locationInput.value = 'home';
+        distanceInput.value = '0';
+        travelInput.value = '0';
+        allowanceInput.value = String(allowanceDefault());
+        $('formTitle').textContent = 'Maç ekle';
+        $('saveButton').innerHTML = `${iconMarkup('plus')} Maçı ekle`;
+        $('cancelEdit').hidden = true;
+        refreshControls(false);
+      }
+      function beginEdit(match) {
+        editingId = match.id;
+        dateInput.value = match.date;
+        typeInput.value = match.typeId;
+        roleInput.value = match.role;
+        secondInput.checked = Boolean(match.second);
+        locationInput.value = match.locationType || 'home';
+        distanceInput.value = match.second ? '0' : (match.distanceBand || '0');
+        travelInput.value = String(match.travelFee || 0);
+        allowanceInput.value = String(match.allowance || 0);
+        $('formTitle').textContent = 'Maçı düzenle';
+        $('saveButton').textContent = 'Değişiklikleri kaydet';
+        $('cancelEdit').hidden = false;
+        refreshControls(false);
+        closeMonthModal();
+        showPage('add');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      typeInput.addEventListener('change', () => refreshControls(true));
+      roleInput.addEventListener('change', () => refreshControls(true));
+      locationInput.addEventListener('change', () => refreshControls(true));
+      distanceInput.addEventListener('change', () => {
+        travelInput.value = String(travelRates[distanceInput.value] || 0);
+        refreshPreview();
+      });
+      secondInput.addEventListener('change', () => {
+        if (secondInput.checked) distanceInput.value = '0';
+        refreshControls(false);
+      });
+      travelInput.addEventListener('input', refreshPreview);
+      allowanceInput.addEventListener('input', refreshPreview);
+      $('cancelEdit').addEventListener('click', resetForm);
+      $('themeToggle').addEventListener('click', () => {
+        setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+      });
+      document.querySelectorAll('[data-open-page]').forEach(link => {
+        link.addEventListener('click', event => {
+          if (link.tagName === 'A') event.preventDefault();
+          showPage(link.dataset.openPage);
+        });
+      });
+      $('closeMonthModal').addEventListener('click', closeMonthModal);
+      $('monthModal').addEventListener('click', event => {
+        if (event.target === $('monthModal')) closeMonthModal();
+      });
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !$('monthModal').hidden) closeMonthModal();
+      });
+      $('exportPdf').addEventListener('click', exportSelectedMonthPdf);
+      $('exportExcel').addEventListener('click', exportSelectedMonthExcel);
+      window.refreshCharts = () => { updateEarningsChart(); updateCategoryChart(); };
+      window.runMonthModalAnimation = animateMonthModalIn;
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (!dateInput.value) { dateInput.focus(); return; }
+        const fee = baseFee();
+        const travel = calculatedTravel();
+        const allowance = calculatedAllowance();
+        const record = {
+          id: editingId || (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`),
+          date: dateInput.value,
+          typeId: typeInput.value,
+          role: roleInput.value,
+          second: secondInput.checked,
+          locationType: locationInput.value,
+          distanceBand: distanceInput.value,
+          matchFee: fee,
+          travelFee: travel,
+          allowance,
+          total: roundMoney(fee + travel + allowance)
+        };
+        if (editingId) {
+          matches = matches.map(item => item.id === editingId ? record : item);
+          showToast('Maç bilgileri güncellendi.');
+        } else {
+          matches.push(record);
+          showToast('Maç eklendi.');
+        }
+        saveMatches(); render(); resetForm();
+      });
+      try { setTheme(localStorage.getItem(THEME_KEY) || 'light'); }
+      catch { setTheme('light'); }
+      resetForm();
+      render();
+      showPage('home');
+    })();
+  </script>
+</body>
+</html>
